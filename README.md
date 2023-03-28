@@ -9,12 +9,13 @@ Staff can input and update recycling data, track and monitor the recycling progr
 The Recycling Tracking System is designed to be scalable and adaptable to cater to future changes in the recycling practices of the organization or community. It provides user training and support to ensure users can use the system effectively and comply with relevant data protection regulations to ensure data privacy. The system is an essential tool for promoting sustainable waste management practices and driving positive change towards a greener future.
 
 Potential Tools:
-MERN	Mongoose, Express, React, Node
-VSCode	Code Editor
-Material UI	Styling
-Nivo	Chart
-Redux Toolkit	State Management
-Axios	Handling of HTTP requests
-Nodemailer	Email sending library
 
-
+  -------------------------------------------------
+ | MERN           | Mongoose, Express, React, Node |
+ | VSCode         | Code Editor                    |
+ | Material UI    | Styling                        |
+ | Nivo           | Chart                          |
+ | Redux Toolkit  | State Management               |
+ | Axios	        | Handling of HTTP requests      |
+ | Nodemailer     | Email sending library          |
+  -------------------------------------------------
