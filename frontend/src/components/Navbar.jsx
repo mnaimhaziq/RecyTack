@@ -75,9 +75,7 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
               <LightModeOutlined sx={{ fontSize: "25px" }} />
             )}
           </IconButton>
-          <IconButton>
-            <SettingsOutlined sx={{ fontSize: "25px" }} />
-          </IconButton>
+         
           <FlexBetween>
             <Button onClick={handleClick} sx={{display: "flex", justifyContent: "space-between", alignItems:"center", textTransform: "none", gap: "1rem"}}>
             <Box
@@ -94,19 +92,19 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
                 <Typography
                   fontWeight="bold"
                   fontSize="0.85rem"
-                  sx={{ color: theme.palette.secondary[100] }}
+                  sx={{ color:  theme.palette.neutral[10] }}
                 >
                   {user.name}
                 </Typography>
                 <Typography
                   fontSize="0.75rem"
-                  sx={{ color: theme.palette.secondary[200] }}
+                  sx={{ color:  theme.palette.neutral[10] }}
                 >
                   {user.email}
                 </Typography>
                
               </Box>
-              <ArrowDropDownOutlined  sx={{color: theme.palette.secondary[300], fontSize: '25px'}}/></>}
+              <ArrowDropDownOutlined  sx={{color:  theme.palette.neutral[10], fontSize: '25px'}}/></>}
                
             </Button>
             <Menu anchorEl={anchorEl} open={isOpen}  onClose={handleClose} anchorOrigin={{ vertical: "bottom", horizontal: "center"}} >

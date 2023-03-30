@@ -15,11 +15,11 @@ import {
   ListItemText,
   Typography,
   useTheme,
-  
 } from "@mui/material";
 import {
   SettingsOutlined,
   ChevronLeft,
+  History,
   ChevronRightOutlined,
   HomeOutlined,
   ShoppingCartOutlined,
@@ -28,70 +28,42 @@ import {
   PublicOutlined,
   PointOfSaleOutlined,
   TodayOutlined,
-  CalendarMonthOutlined,
-  AdminPanelSettingsOutlined,
-  TrendingUpOutlined,
-  PieChartOutlined,
+  Feedback,
+  Article,
+  Leaderboard,
+  BarChart,
   Logout,
   AccountCircle,
-  GroupAdd
+  GroupAdd,
 } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
 
 import { logout, reset } from "../features/auth/authSlice";
 
-const navItems = [
+const UserNavItems = [
   {
     text: "Dashboard",
     icon: <HomeOutlined />,
   },
   {
-    text: "Client Facing",
-    icon: null,
+    text: "Recycling History",
+    icon: <History />,
   },
   {
-    text: "Users",
-    icon: <GroupAdd />,
+    text: "Education",
+    icon: <Article />,
   },
   {
-    text: "Customers",
-    icon: <ReceiptLongOutlined />,
+    text: "Leaderboard",
+    icon: <Leaderboard />,
   },
   {
-    text: "Geography",
-    icon: <PublicOutlined />,
+    text: "Data Visualization",
+    icon: <BarChart />,
   },
   {
-    text: "Sales",
-    icon: null,
-  },
-  {
-    text: "Overview",
-    icon: <PointOfSaleOutlined />,
-  },
-  {
-    text: "Daily",
-    icon: <TodayOutlined />,
-  },
-  {
-    text: "Monthly",
-    icon: <CalendarMonthOutlined />,
-  },
-  {
-    text: "Breakdown",
-    icon: <PieChartOutlined />,
-  },
-  {
-    text: "Management",
-    icon: null,
-  },
-  {
-    text: "Admin",
-    icon: <AdminPanelSettingsOutlined />,
-  },
-  {
-    text: "Perfomance",
-    icon: <TrendingUpOutlined />,
+    text: "Feedback",
+    icon: <Feedback />,
   },
   {
     text: "User",
@@ -105,7 +77,45 @@ const navItems = [
     text: "Logout",
     icon: <Logout />,
   },
-  
+];
+
+const AdminNavItems = [
+  {
+    text: "Dashboard",
+    icon: <HomeOutlined />,
+  },
+  {
+    text: "Users",
+    icon: <GroupAdd />,
+  },
+  {
+    text: "Education",
+    icon: <Article />,
+  },
+  {
+    text: "Leaderboard",
+    icon: <Leaderboard />,
+  },
+  {
+    text: "Data Visualization",
+    icon: <BarChart />,
+  },
+  {
+    text: "Feedbacks",
+    icon: <Feedback />,
+  },
+  {
+    text: "User",
+    icon: null,
+  },
+  {
+    text: "Profile",
+    icon: <AccountCircle />,
+  },
+  {
+    text: "Logout",
+    icon: <Logout />,
+  },
 ];
 
 function Sidebar({
@@ -128,9 +138,10 @@ function Sidebar({
   const logoutHandler = () => {
     dispatch(logout());
     dispatch(reset());
-    navigate('/')
-
+    navigate("/");
   };
+
+  const navItems = user && user.isAdmin ? AdminNavItems : UserNavItems;
 
   return (
     <Box component="nav">
@@ -153,9 +164,14 @@ function Sidebar({
         >
           <Box width="100%">
             <Box m="1.5rem 2rem 2rem 3rem">
-              <FlexBetween color={theme.palette.secondary.main}>
-                <Box display="flex" alignItems="center"  gap="0.5rem">
-                  <Typography m="0 0 0 2rem " variant="h4" fontWeight="bold"  sx={{ color: theme.palette.primary[200] }}>
+              <FlexBetween>
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Typography
+                    m="0 0 0  2rem "
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{ color: theme.palette.secondary.main }}
+                  >
                     RECYTRACK
                   </Typography>
                 </Box>
@@ -166,19 +182,23 @@ function Sidebar({
                 )}
               </FlexBetween>
             </Box>
-            <List sx={{paddingBottom: '1.5rem'}}>
+            <List sx={{ paddingBottom: "1.5rem" }}>
               {navItems.map(({ text, icon }) => {
                 if (!icon) {
                   return (
-                    <Typography key={text} sx={{ m: "2.25rem 0 1rem 3rem" }} fontWeight="bold">
+                    <Typography
+                      key={text}
+                      sx={{ m: "2.25rem 0 1rem 3rem" }}
+                      fontWeight="bold"
+                    >
                       {text}
                     </Typography>
                   );
                 }
                 const lcText = text.toLowerCase();
-               
+
                 return (
-                  <ListItem key={text} disablePadding>
+                  <ListItem key={text} sx={{ p: "0.3rem 0" }}>
                     <ListItemButton
                       onClick={() => {
                         navigate(`/${lcText}`);
@@ -187,12 +207,30 @@ function Sidebar({
                       sx={{
                         backgroundColor:
                           active === lcText
-                            ? theme.palette.secondary[500]
+                            ? theme.palette.secondary.dark
                             : "transparent",
                         color:
                           active === lcText
-                            ? theme.palette.primary[600]
+                            ? theme.palette.neutral[1000]
                             : theme.palette.secondary[100],
+                        "&:hover": {
+                          color:
+                            active === lcText
+                              ? theme.palette.neutral[10]
+                              : "black",
+                          "& .MuiListItemIcon-root": {
+                            color:
+                              active === lcText
+                                ? theme.palette.neutral[10]
+                                : "black",
+                          },
+                          "& .MuiListItemText-primary": {
+                            color:
+                              active === lcText
+                                ? theme.palette.neutral[10]
+                                : "black",
+                          },
+                        },
                       }}
                     >
                       <ListItemIcon
@@ -200,13 +238,16 @@ function Sidebar({
                           ml: "2rem",
                           color:
                             active === lcText
-                              ? theme.palette.primary[600]
+                              ? theme.palette.neutral[1000]
                               : theme.palette.secondary[200],
                         }}
                       >
                         {icon}
                       </ListItemIcon>
-                      <ListItemText primary={text} sx={{fontSize:"0.87rem"}}/>
+                      <ListItemText
+                        primary={text}
+                        sx={{ fontSize: "0.87rem" }}
+                      />
                       {active === lcText && (
                         <ChevronRightOutlined sx={{ ml: "auto" }} />
                       )}
@@ -214,11 +255,8 @@ function Sidebar({
                   </ListItem>
                 );
               })}
-  
             </List>
           </Box>
-
-         
         </Drawer>
       )}
     </Box>

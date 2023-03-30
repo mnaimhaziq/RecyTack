@@ -1,9 +1,9 @@
 // color design tokens export
 export const tokensDark = {
   grey: {
-    0: "#ffffff", // manually adjusted
-    10: "#f6f6f6", // manually adjusted
-    50: "#f0f0f0", // manually adjusted
+    0: "#ffffff",
+    10: "#f6f6f6",
+    50: "#f0f0f0",
     100: "#e0e0e0",
     200: "#c2c2c2",
     300: "#a3a3a3",
@@ -13,32 +13,32 @@ export const tokensDark = {
     700: "#3d3d3d",
     800: "#292929",
     900: "#141414",
-    1000: "#000000", // manually adjusted
+    1000: "#000000",
   },
   primary: {
-    // blue
-    100: "#d3d4de",
-    200: "#a6a9be",
-    300: "#7a7f9d",
-    400: "#4d547d",
-    500: "#21295c",
-    600: "#191F45", // manually adjusted
-    700: "#141937",
-    800: "#0d1025",
-    900: "#070812",
+    // dark green
+    100: "#a7d7c5",
+    200: "#87c1aa",
+    300: "#67ab8f",
+    400: "",
+    500: "#278f5b",
+    600: "#22774b",
+    700: "#1c5f3c",
+    800: "#17372c",
+    900: "#111f1d"
   },
   secondary: {
-    100: "#e3e6fb",
-    200: "#c7ccf7",
-    300: "#abb3f4",
-    400: "#8f99f0",
-    500: "#7380ec",
-    600: "#5c66bd",
-    700: "#454d8e",
-    800: "#2e335e",
-    900: "#171a2f",
+    // dark purple
+    100: "#ddc6e7",
+    200: "#c39bdd",
+    300: "#a97bd3",
+    400: "#8f51c9",
+    500: "#7537bf",
+    600: "#5c2d9e",
+    700: "#43237e",
+    800: "#29195d",
+    900: "#100f3d",
   },
-
   danger: {
     100: "#ffe4e6",
     200: "#ffc9cd",
@@ -51,6 +51,7 @@ export const tokensDark = {
     900: "#33181a",
   },
 };
+
 
 // function that reverses the color palette
 function reverseTokens(tokensDark) {
@@ -89,6 +90,7 @@ export const themeSettings = (mode) => {
             neutral: {
               ...tokensDark.grey,
               main: tokensDark.grey[500],
+              white: tokensDark.grey[1000]
             },
             background: {
               default: tokensDark.primary[700],
@@ -96,8 +98,8 @@ export const themeSettings = (mode) => {
             },
             danger: {
               ...tokensDark.danger,
-              main: tokensDark.danger[500]
-            }
+              main: tokensDark.danger[500],
+            },
           }
         : {
             // palette values for light mode
@@ -114,6 +116,7 @@ export const themeSettings = (mode) => {
             neutral: {
               ...tokensLight.grey,
               main: tokensDark.grey[500],
+              white: tokensDark.grey[0]
             },
             background: {
               default: tokensDark.grey[0],
@@ -121,8 +124,8 @@ export const themeSettings = (mode) => {
             },
             danger: {
               ...tokensLight.danger,
-              main: tokensDark.danger[400]
-            }
+              main: tokensDark.danger[400],
+            },
           }),
     },
     typography: {
