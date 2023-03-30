@@ -17,17 +17,11 @@ import {
   useTheme,
 } from "@mui/material";
 import {
-  SettingsOutlined,
   ChevronLeft,
   History,
   ChevronRightOutlined,
   HomeOutlined,
-  ShoppingCartOutlined,
-  Groups2Outlined,
-  ReceiptLongOutlined,
-  PublicOutlined,
-  PointOfSaleOutlined,
-  TodayOutlined,
+  Domain,
   Feedback,
   Article,
   Leaderboard,
@@ -91,6 +85,10 @@ const AdminNavItems = [
   {
     text: "Education",
     icon: <Article />,
+  },
+  {
+    text: "Recycling Location",
+    icon: <Domain />,
   },
   {
     text: "Leaderboard",
@@ -170,7 +168,7 @@ function Sidebar({
                     m="0 0 0  2rem "
                     variant="h4"
                     fontWeight="bold"
-                    sx={{ color: theme.palette.secondary.main }}
+                    sx={{ color: theme.palette.green.main }}
                   >
                     RECYTRACK
                   </Typography>
@@ -195,7 +193,7 @@ function Sidebar({
                     </Typography>
                   );
                 }
-                const lcText = text.toLowerCase();
+                const lcText = text.toLowerCase().replace(/\s+/g, '');;
 
                 return (
                   <ListItem key={text} sx={{ p: "0.3rem 0" }}>
@@ -207,7 +205,7 @@ function Sidebar({
                       sx={{
                         backgroundColor:
                           active === lcText
-                            ? theme.palette.secondary.dark
+                            ? theme.palette.green.main
                             : "transparent",
                         color:
                           active === lcText
