@@ -66,7 +66,7 @@ const RecyclingLocation = () => {
 
   const handlePageChange = (event, value) => {
     setPage(value);
-    // console.log(page)
+    
   };
 
   const handleEdit = async (id) => {
@@ -130,7 +130,7 @@ const RecyclingLocation = () => {
     };
     
     await dispatch(createRecycleCollection({newFormData, token: user.token}));
-    dispatch(getAllRecycleLocation(user.token));
+    dispatch(getAllRecycleLocation({token: user.token, page} ));
     resetForm();
     setOpen(false);
   };
@@ -163,7 +163,7 @@ const RecyclingLocation = () => {
   
     try {
       await dispatch(updateRecycleLocationById({ id, newFormData, token: user.token }));
-      dispatch(getAllRecycleLocation(user.token));
+      dispatch(getAllRecycleLocation({token: user.token, page} ));
       resetForm();
       setOpenEditDialog(false);
     } catch (error) {

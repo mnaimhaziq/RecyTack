@@ -31,8 +31,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/users" element={<AllUsers />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/manageusers" element={<AllUsers />} />
+              <Route path="/manageprofile" element={<Profile />} />
               <Route path="/recyclinghistory" element={<RecyclingHistory />} />
               <Route path="/recyclinglocation" element={<RecyclingLocation />} />
               <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />

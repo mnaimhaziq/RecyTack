@@ -52,10 +52,6 @@ const UserNavItems = [
     icon: <Leaderboard />,
   },
   {
-    text: "Data Visualization",
-    icon: <BarChart />,
-  },
-  {
     text: "Feedback",
     icon: <Feedback />,
   },
@@ -64,12 +60,8 @@ const UserNavItems = [
     icon: null,
   },
   {
-    text: "Profile",
+    text: "Manage Profile",
     icon: <AccountCircle />,
-  },
-  {
-    text: "Logout",
-    icon: <Logout />,
   },
 ];
 
@@ -79,24 +71,20 @@ const AdminNavItems = [
     icon: <HomeOutlined />,
   },
   {
-    text: "Users",
-    icon: <GroupAdd />,
-  },
-  {
-    text: "Education",
-    icon: <Article />,
+    text: "Recycling History",
+    icon: <History />,
   },
   {
     text: "Recycling Location",
     icon: <Domain />,
   },
   {
-    text: "Leaderboard",
-    icon: <Leaderboard />,
+    text: "Education",
+    icon: <Article />,
   },
   {
-    text: "Data Visualization",
-    icon: <BarChart />,
+    text: "Leaderboard",
+    icon: <Leaderboard />,
   },
   {
     text: "Feedbacks",
@@ -107,12 +95,12 @@ const AdminNavItems = [
     icon: null,
   },
   {
-    text: "Profile",
-    icon: <AccountCircle />,
+    text: "Manage Users",
+    icon: <GroupAdd />,
   },
   {
-    text: "Logout",
-    icon: <Logout />,
+    text: "Manage Profile",
+    icon: <AccountCircle />,
   },
 ];
 

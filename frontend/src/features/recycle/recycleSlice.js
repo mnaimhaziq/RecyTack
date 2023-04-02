@@ -15,7 +15,6 @@ const initialState = {
 //Get All Recycle Location
 export const getAllRecycleLocation = createAsyncThunk("recycle/getAllRecycleLocation", async ({token, page}, thunkAPI) => {
     try {
-      console.log("page: " + page);
       const recycleLocations = await recycleService.getAllRecycleLocation(token, page);
       return recycleLocations;
     } catch (error) {
