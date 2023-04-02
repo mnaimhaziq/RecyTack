@@ -78,8 +78,7 @@ const RecyclingLocation = () => {
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this location?")) {
       dispatch(deleteRecycleCollection({ id, token: user.token }));
-      dispatch(getAllRecycleLocation(user.token));
-    }
+      dispatch(getAllRecycleLocation({token: user.token, page} ));    }
   };
 
   const initialValues = {
