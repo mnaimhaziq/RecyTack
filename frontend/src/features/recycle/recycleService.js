@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = "/api/recycle/";
 
 // Get all recycle locations
-const getAllRecycleLocation = async (token, page) => {
+const getAllRecycleLocation = async (token, page, search) => {
  
   
     const config = {
@@ -11,7 +11,7 @@ const getAllRecycleLocation = async (token, page) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await axios.get(API_URL + `location?page=${page}` ,config);
+    const response = await axios.get(API_URL + `location?page=${page}&search=${search}` ,config);
     return response.data;
   }
 

@@ -18,6 +18,7 @@ import {
   IconButton,
   useTheme,
   Pagination,
+  PaginationItem
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import Header from "../components/Header";
@@ -36,6 +37,7 @@ const RecyclingLocation = () => {
   const [open, setOpen] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
   
   const [totalPages, setTotalPages] = useState(1);
 
@@ -50,10 +52,10 @@ const RecyclingLocation = () => {
   const theme = useTheme();
 
   useEffect(() => {
-    dispatch(getAllRecycleLocation({token: user.token, page} ));
+    dispatch(getAllRecycleLocation({token: user.token, page, search} ));
     dispatch(getAllWasteTypes(user.token));
     setTotalPages(recycleLocations.pages)
-  }, [dispatch, user.token, page, recycleLocations.pages]);
+  }, [dispatch, user.token, page, recycleLocations.pages,search]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -65,20 +67,26 @@ const RecyclingLocation = () => {
   };
 
   const handlePageChange = (event, value) => {
-    setPage(value);
-    
+   setPage(value)
   };
+
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+    setPage(1)
+  }
+  
+  
 
   const handleEdit = async (id) => {
     
-    await dispatch(getRecycleLocationById({ id, token: user.token }));
+    await dispatch(getRecycleLocationById({ id, token: user.token, search }));
     setOpenEditDialog(true);
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this location?")) {
       dispatch(deleteRecycleCollection({ id, token: user.token }));
-      dispatch(getAllRecycleLocation({token: user.token, page} ));    }
+      dispatch(getAllRecycleLocation({token: user.token, page, search} ));    }
   };
 
   const initialValues = {
@@ -129,7 +137,7 @@ const RecyclingLocation = () => {
     };
     
     await dispatch(createRecycleCollection({newFormData, token: user.token}));
-    dispatch(getAllRecycleLocation({token: user.token, page} ));
+    dispatch(getAllRecycleLocation({token: user.token, page, search} ));
     resetForm();
     setOpen(false);
   };
@@ -162,7 +170,7 @@ const RecyclingLocation = () => {
   
     try {
       await dispatch(updateRecycleLocationById({ id, newFormData, token: user.token }));
-      dispatch(getAllRecycleLocation({token: user.token, page} ));
+      dispatch(getAllRecycleLocation({token: user.token, page, search} ));
       resetForm();
       setOpenEditDialog(false);
     } catch (error) {
@@ -173,19 +181,33 @@ const RecyclingLocation = () => {
   };
 
   return (
-    <Box m="1.5rem 2.5rem">
+    <Box m="1.5rem 2.5rem " p="0 0 4rem 0">
       <Header title="RECYCLING LOCATION" />
+      
       <div>
-        <Button
-          sx={{ m: "1rem 0" }}
-          variant="contained"
-          color="primary"
-          onClick={handleClickOpen}
-        >
-          Create New Recycling Location
-        </Button>
+        
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+  <Button
+    sx={{ m: '1rem 0' }}
+    variant="contained"
+    color="primary"
+    onClick={handleClickOpen}
+  >
+    Create New Recycling Location
+  </Button>
+  <TextField
+    id="search"
+    label="Search By Location Name"
+    variant="outlined"
+    size="small"
+    value={search}
+    onChange={handleSearchChange}
+    sx={{ m: '0 0 1rem 0' }}
+  />
+</Box>
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>Add New Recycling Collection Location</DialogTitle>
+          
           <DialogContent>
             <Formik
               initialValues={initialValues}
@@ -312,17 +334,17 @@ const RecyclingLocation = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <Paper>
+      <Paper >
         <TableContainer>
           <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Location Name</TableCell>
-                <TableCell>Address</TableCell>
-                <TableCell>Contact Number</TableCell>
+          <TableHead style={{ backgroundColor: theme.palette.primary.main }}>
+              <TableRow  >
+                <TableCell style={{ color: '#ffffff' }}>Location Name</TableCell>
+                <TableCell style={{ color: '#ffffff' }}>Address</TableCell>
+                <TableCell style={{ color: '#ffffff' }}>Contact Number</TableCell>
                 {/* <TableCell>Waste Types</TableCell> */}
-                <TableCell>Latitude</TableCell>
-                <TableCell>Longitude</TableCell>
+                <TableCell style={{ color: '#ffffff' }}>Latitude</TableCell>
+                <TableCell style={{ color: '#ffffff' }}>Longitude</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
@@ -356,11 +378,15 @@ const RecyclingLocation = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Pagination
+        sx={{m: "1rem 0"}}
           count={totalPages}
           page={page}
           onChange={handlePageChange}
+          siblingCount={1}
+          showFirstButton
+          showLastButton
         />
       </Box>
       </Paper>
