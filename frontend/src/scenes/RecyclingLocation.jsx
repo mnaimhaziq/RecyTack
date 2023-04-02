@@ -17,6 +17,7 @@ import {
   TableRow,
   IconButton,
   useTheme,
+  Pagination,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import Header from "../components/Header";
@@ -34,20 +35,25 @@ import { createRecycleCollection, reset } from "../features/recycle/recycleSlice
 const RecyclingLocation = () => {
   const [open, setOpen] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [page, setPage] = useState(1);
+  
+  const [totalPages, setTotalPages] = useState(1);
 
   const auth = useSelector((state) => state.auth);
+  const { user } = auth;
   const recycleLocations = useSelector((state) => state.recycle.recycleLocations);
   const recycleLocation = useSelector((state) => state.recycle.recycleLocationById);
 
-  const { user } = auth;
+
   const dispatch = useDispatch();
 
   const theme = useTheme();
 
   useEffect(() => {
-    dispatch(getAllRecycleLocation(user.token));
+    dispatch(getAllRecycleLocation({token: user.token, page} ));
     dispatch(getAllWasteTypes(user.token));
-  }, [dispatch, user.token]);
+    setTotalPages(recycleLocations.pages)
+  }, [dispatch, user.token, page, recycleLocations.pages]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -56,6 +62,11 @@ const RecyclingLocation = () => {
   const handleClose = () => {
     setOpen(false);
     setOpenEditDialog(false)
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    // console.log(page)
   };
 
   const handleEdit = async (id) => {
@@ -317,7 +328,7 @@ const RecyclingLocation = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {recycleLocations.map((row) => (
+              {recycleLocations.data && (recycleLocations.data.map((row) => (
                 <TableRow key={row._id}>
                   <TableCell>{row.locationName}</TableCell>
                   <TableCell>{`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.country}`}</TableCell>
@@ -342,10 +353,17 @@ const RecyclingLocation = () => {
                     </IconButton>
                   </TableCell>
                 </TableRow>
-              ))}
+              )))}
             </TableBody>
           </Table>
         </TableContainer>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={handlePageChange}
+        />
+      </Box>
       </Paper>
       <Dialog open={openEditDialog} onClose={handleClose}>
           <DialogTitle>Edit Recycling Collection Location for {recycleLocation.locationName}</DialogTitle>

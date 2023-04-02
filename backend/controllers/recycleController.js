@@ -44,11 +44,22 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
 );
 
 // @desc     Get all recycling locations
-// @route    GET /api/recycling-locations
+// @route    GET /api/recycling-locations?page=1
 // @access   Private
 const getAllRecyclingLocations = asyncHandler(async (req, res) => {
-  const recyclingLocations = await RecyclingCollection.find({});
-  res.json(recyclingLocations);
+  const pageSize = 5;
+  const page = Number(req.query.page) || 1;
+
+  const count = await RecyclingCollection.countDocuments({});
+  const recyclingLocations = await RecyclingCollection.find({})
+    .skip(pageSize * (page - 1))
+    .limit(pageSize);
+
+  res.json({
+    data: recyclingLocations,
+    page,
+    pages: Math.ceil(count / pageSize),
+  });
 });
 
 // @desc     Delete a recycling location
