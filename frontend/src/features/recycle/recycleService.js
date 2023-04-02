@@ -4,7 +4,7 @@ const API_URL = "/api/recycle/";
 
 // Get all recycle locations
 const getAllRecycleLocation = async (token, page) => {
-    console.log(page);
+ 
   
     const config = {
       headers: {
