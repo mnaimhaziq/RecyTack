@@ -1,0 +1,69 @@
+@import '../index.css';
+
+.auth-body {
+    background: rgba(175,222,246, 1);
+  background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%);
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.auth {
+    min-width: 25% !important;
+    margin: 0 10px;
+    padding: 4rem 3rem 6rem;
+    border-radius: 20px;
+    box-shadow: var(--box-shadow);
+    transition: .5s;
+    color: black;
+    
+
+}
+
+.auth:hover{
+    box-shadow: none;
+}
+
+
+.auth Button{
+    width: 100%;
+    display: block;
+    margin: 1.5rem auto;
+}
+
+.register-body {
+    background: rgba(175,222,246, 1);
+    background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%);
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.register {
+    min-width: 25% !important;
+    margin:  35px;
+    padding: 1.5rem 3rem 1rem;
+    border-radius: 20px;
+    box-shadow: var(--box-shadow);
+    transition: .5s;
+    color: black;
+    
+
+}
+
+.register:hover{
+    box-shadow: none;
+}
+
+
+.register Button{
+    width: 100%;
+    display: block;
+    margin: 1.5rem auto;
+}

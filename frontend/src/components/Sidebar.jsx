@@ -215,18 +215,18 @@ function Sidebar({
                           color:
                             active === lcText
                               ? theme.palette.neutral[10]
-                              : "black",
+                              : theme.palette.green.main,
                           "& .MuiListItemIcon-root": {
                             color:
                               active === lcText
                                 ? theme.palette.neutral[10]
-                                : "black",
+                                : theme.palette.green.main
                           },
                           "& .MuiListItemText-primary": {
                             color:
                               active === lcText
                                 ? theme.palette.neutral[10]
-                                : "black",
+                                : theme.palette.green.main,
                           },
                         },
                       }}

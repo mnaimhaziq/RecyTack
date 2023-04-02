@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Card, Button, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
-import "./LoginScreen.css";
+import "./AuthScreen.css";
 import { login, reset } from "../features/auth/authSlice";
 import Spinner from "../components/Spinner";
 
@@ -53,8 +53,8 @@ const LoginScreen = () => {
   }
 
   return (
-    <div className="login-body">
-      <Card className="login ">
+    <div className="auth-body">
+      <Card className="auth ">
         <Card.Title as="h2" className="text-center mb-5">
           Login
         </Card.Title>

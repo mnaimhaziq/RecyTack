@@ -8,6 +8,7 @@ import Dashboard from "./scenes/Dashboard";
 import Layout from "./scenes/Layout";
 import AllUsers from "./scenes/AllUsers"
 import Login from "./scenes/Login"
+import Register from "./scenes/Register"
 import Profile from "./scenes/Profile"
 import RecyclingHistory from "./scenes/RecyclingHistory"
 import RecyclingLocation from "./scenes/RecyclingLocation";
@@ -28,6 +29,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/users" element={<AllUsers />} />
               <Route path="/profile" element={<Profile />} />

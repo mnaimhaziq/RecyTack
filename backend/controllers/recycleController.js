@@ -12,7 +12,6 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
     contactNumber,
     latitude,
     longitude,
-    acceptedWasteTypes,
   } = req.body;
 
   // Check if a recycling location with the same name and address already exists
@@ -34,7 +33,6 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
     contactNumber,
     latitude,
     longitude,
-    acceptedWasteTypes,
   });
 
   if (recyclingLocation) {
@@ -42,7 +40,8 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
   } else {
     res.status(400).json({ error: "Invalid recycling location data" });
   }
-});
+}
+);
 
 // @desc     Get all recycling locations
 // @route    GET /api/recycling-locations
@@ -76,8 +75,7 @@ const updateRecyclingLocation = asyncHandler(async (req, res) => {
     address,
     contactNumber,
     latitude,
-    longitude,
-    acceptedWasteTypes,
+    longitude
   } = req.body;
 
   const recyclingLocation = await RecyclingCollection.findById(req.params.id);
@@ -90,8 +88,7 @@ const updateRecyclingLocation = asyncHandler(async (req, res) => {
       contactNumber || recyclingLocation.contactNumber;
     recyclingLocation.latitude = latitude || recyclingLocation.latitude;
     recyclingLocation.longitude = longitude || recyclingLocation.longitude;
-    recyclingLocation.acceptedWasteTypes =
-      acceptedWasteTypes || recyclingLocation.acceptedWasteTypes;
+  
 
     const updatedRecyclingLocation = await recyclingLocation.save();
     res.json(updatedRecyclingLocation);
@@ -99,6 +96,17 @@ const updateRecyclingLocation = asyncHandler(async (req, res) => {
     res.status(404).json({ error: "Recycling location not found" });
   }
 });
+
+const getRecyclingLocationById = asyncHandler(async (req, res) => {
+  const recyclingLocation = await RecyclingCollection.findById(req.params.id);
+  
+  if (!recyclingLocation) {
+  res.status(404);
+  throw new Error('Recycling location not found');
+  }
+  
+  res.json(recyclingLocation);
+  });
 
 // @desc     Create a new waste type
 // @route    POST /api/waste-types
@@ -142,6 +150,7 @@ export {
   getAllRecyclingLocations,
   deleteRecyclingLocation,
   updateRecyclingLocation,
+  getRecyclingLocationById,
   createWasteType,
   getAllWasteTypes
 };

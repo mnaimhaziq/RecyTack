@@ -3,7 +3,8 @@ import recycleService from "./recycleService";
 
 
 const initialState = {
-    recycleLocation: [],
+    recycleLocations: [],
+    recycleLocationById: {},
     wasteType: [],
     isError: false,
     isSuccess: false,
@@ -39,6 +40,21 @@ export const getAllRecycleLocation = createAsyncThunk("recycle/getAllRecycleLoca
     }
   });
 
+    //Create recycle collection
+    export const createRecycleCollection = createAsyncThunk("recycle/createRecycleCollection", async ({newFormData, token}, thunkAPI) => {
+      try {
+        const recycleCollection = await recycleService.createRecycleCollection(newFormData, token);
+        return recycleCollection;
+      } catch (error) {
+        const message =
+          (error.response && error.response.data && error.response.data.message) ||
+          error.message ||
+          error;
+        return thunkAPI.rejectWithValue(message);
+      }
+    });
+
+
     //Delete recycle collection
     export const deleteRecycleCollection = createAsyncThunk("recycle/deleteRecycleCollection", async ({id, token}, thunkAPI) => {
       try {
@@ -53,11 +69,46 @@ export const getAllRecycleLocation = createAsyncThunk("recycle/getAllRecycleLoca
       }
     });
 
+        // Get recycle collection by id
+        export const getRecycleLocationById = createAsyncThunk("recycle/getRecycleLocationById", async ({id, token}, thunkAPI) => {
+          try {
+            const recycleCollection = await recycleService.getRecycleLocationById(id, token);
+            return recycleCollection;
+          } catch (error) {
+            const message =
+              (error.response && error.response.data && error.response.data.message) ||
+              error.message ||
+              error;
+            return thunkAPI.rejectWithValue(message);
+          }
+        });
+
+                // Update recycle collection by id
+                export const updateRecycleLocationById = createAsyncThunk("recycle/updateRecycleLocationById", async ({id, newFormData, token}, thunkAPI) => {
+                  try {
+                    const recycleCollection = await recycleService.updateRecycleLocationById(id, newFormData, token);
+                    return recycleCollection;
+                  } catch (error) {
+                    const message =
+                      (error.response && error.response.data && error.response.data.message) ||
+                      error.message ||
+                      error;
+                    return thunkAPI.rejectWithValue(message);
+                  }
+                });
 
   export const recycleSlice = createSlice({
     name: "recycle",
     initialState,
-    reducers: {},
+    reducers: {
+      reset: (state) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = false;
+        state.message = "";
+        state.recycleLocationById = {};
+      },
+    },
     extraReducers: (builder) => {
         builder
         .addCase(getAllRecycleLocation.pending, (state) => {
@@ -66,13 +117,13 @@ export const getAllRecycleLocation = createAsyncThunk("recycle/getAllRecycleLoca
         .addCase(getAllRecycleLocation.fulfilled, (state, action) => {
           state.isLoading = false;
           state.isSuccess = true;
-          state.recycleLocation = action.payload;
+          state.recycleLocations = action.payload;
         })
         .addCase(getAllRecycleLocation.rejected, (state, action) => {
           state.isLoading = false;
           state.isError = true;
           state.message = action.payload;
-          state.recycleLocation = null;
+          state.recycleLocations = null;
         }) .addCase(getAllWasteTypes.pending, (state) => {
             state.isLoading = true;
           })
@@ -86,7 +137,18 @@ export const getAllRecycleLocation = createAsyncThunk("recycle/getAllRecycleLoca
             state.isError = true;
             state.message = action.payload;
             state.wasteType = null;
-          }) 
+          }).addCase(createRecycleCollection.pending, (state) => {
+            state.isLoading = true;
+          })
+          .addCase(createRecycleCollection.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isSuccess = true;
+          })
+          .addCase(createRecycleCollection.rejected, (state, action) => {
+            state.isLoading = false;
+            state.isError = true;
+            state.message = action.payload;
+          })
           .addCase(deleteRecycleCollection.pending, (state) => {
             state.isLoading = true;
           })
@@ -97,6 +159,30 @@ export const getAllRecycleLocation = createAsyncThunk("recycle/getAllRecycleLoca
           .addCase(deleteRecycleCollection.rejected, (state, action) => {
             state.isLoading = false;
             state.isError = true;
+          }).addCase(getRecycleLocationById.pending, (state) => {
+            state.isLoading = true;
+          })
+          .addCase(getRecycleLocationById.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isSuccess = true;
+            state.recycleLocationById = action.payload;
+          })
+          .addCase(getRecycleLocationById.rejected, (state, action) => {
+            state.isLoading = false;
+            state.isError = true;
+            state.message = action.payload;
+            state.recycleLocationById = {};
+          }).addCase(updateRecycleLocationById.pending, (state) => {
+            state.isLoading = true;
+          })
+          .addCase(updateRecycleLocationById.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isSuccess = true;
+          })
+          .addCase(updateRecycleLocationById.rejected, (state, action) => {
+            state.isLoading = false;
+            state.isError = true;
+            state.message = action.payload;
           })
     },
   });

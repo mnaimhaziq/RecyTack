@@ -16,7 +16,10 @@ function Layout() {
 
   useEffect(() => {
     // redirect to login page if user is null
-    if (!user) {
+    if(!user &&  window.location.pathname === '/register'){
+      navigate('/register')
+    }
+    else if (!user ) {
       navigate('/login');
     }
   }, [user, navigate]);

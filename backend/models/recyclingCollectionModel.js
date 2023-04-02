@@ -35,10 +35,6 @@ const recyclingCollectionSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  acceptedWasteTypes: [{
-    type: String,
-    required:true
-  }],
 });
 
 const RecyclingCollection = mongoose.model("RecyclingCollection", recyclingCollectionSchema);
