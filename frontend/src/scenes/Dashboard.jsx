@@ -31,23 +31,24 @@ function Dashboard() {
           },
         },
         scales: {
-          yAxes: [
-            {
-              ticks: {
-                beginAtZero: true,
-                fontColor: "#ffffff",
-                color: "#ffffff",
-              },
+          y: {
+            ticks: {
+              beginAtZero: true,
+              fontColor: "#ffffff",
+              color: "#ffffff",
             },
-            
-          ],
-          xAxes: [
-            {
-              ticks: {
-                fontColor: "#ffffff", // change this to the color you want for the tick labels
-                color: "#ffffff", // change this to the color you want for the tick lines
-              },
-            },],
+            title: {
+              display: true,
+              text: "Recycling Waste",
+              fontColor: "#ffffff",
+            },
+          },
+          x: {
+            ticks: {
+              fontColor: "#ffffff",
+              color: "#ffffff",
+            },
+          },
         },
       },
     });

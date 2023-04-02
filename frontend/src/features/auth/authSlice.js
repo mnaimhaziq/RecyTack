@@ -43,6 +43,8 @@ export const login = createAsyncThunk("auth/login", async (user, thunkAPI) => {
   }
 });
 
+
+
 //Update User Profile
 export const updateProfile = createAsyncThunk("auth/updateProfile", async (user, thunkAPI) => {
   try {
@@ -56,7 +58,7 @@ export const updateProfile = createAsyncThunk("auth/updateProfile", async (user,
   }
 });
 
-//Update User Profile
+//Get All Users
 export const getAllUsers = createAsyncThunk("auth/getAllUsers", async (token, thunkAPI) => {
   try {
     const users = await authService.getAllUsers(token);

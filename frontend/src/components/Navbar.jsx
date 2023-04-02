@@ -3,19 +3,16 @@ import {
   LightModeOutlined,
   DarkModeOutlined,
   Menu as MenuIcon,
-  Search,
-  SettingsOutlined,
   ArrowDropDownOutlined,
+  PersonOutlined
 } from "@mui/icons-material";
 import FlexBetween from "./FlexBetween";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setMode } from "../features/globalSlice";
-import ProfileImage from "../assets/profile.jpeg";
 import {
   AppBar,
   IconButton,
-  InputBase,
   Toolbar,
   useTheme,
   Button,
@@ -78,15 +75,17 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
          
           <FlexBetween>
             <Button onClick={handleClick} sx={{display: "flex", justifyContent: "space-between", alignItems:"center", textTransform: "none", gap: "1rem"}}>
-            <Box
+            {/* <Box
                 component="img"
                 alt="profile"
-                src={ProfileImage}
+                src=""
                 height="32px"
                 width="32px"
                 borderRadius="50%"
                 sx={{ objectFit: "cover" }}
-              />
+              /> */}
+              <PersonOutlined  sx={{height:"32px",
+                width:"32px", color: theme.palette.neutral[10]}}/>
               {isNonMobile && <>
                 <Box textAlign="left">
                 <Typography

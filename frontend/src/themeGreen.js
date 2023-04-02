@@ -58,6 +58,11 @@ function reverseTokens(tokensDark) {
                 main: tokensDark.green[700],
                 light: tokensDark.green[700],
               },
+              primary: {
+                ...tokensLight.green,
+                main: tokensDark.green[700],
+                light: tokensDark.green[700],
+              },
               neutral: {
                 ...tokensDark.grey,
                 main: tokensDark.grey[500],
@@ -69,6 +74,11 @@ function reverseTokens(tokensDark) {
             }
           : {
               // palette values for light mode
+              green: {
+                ...tokensLight.green,
+                main: tokensDark.green[700],
+                light: tokensDark.green[700],
+              },
               primary: {
                 ...tokensLight.green,
                 main: tokensDark.green[300],

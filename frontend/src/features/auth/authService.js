@@ -64,7 +64,7 @@ const authService = {
   login,
   updateProfile,
   getAllUsers,
-  logout
+  logout,
 };
 
 export default authService;
