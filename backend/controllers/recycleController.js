@@ -43,23 +43,33 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
 }
 );
 
-// @desc     Get all recycling locations
-// @route    GET /api/recycling-locations?page=1
+// @desc     Get all recycling locations in reverse order or search by keyword
+// @route    GET /api/recycling-locations/reverse?page=1&search=keyword
 // @access   Private
-const getAllRecyclingLocations = asyncHandler(async (req, res) => {
+const getAllRecyclingLocations = asyncHandler(async (req, res, next) => {
   const pageSize = 5;
   const page = Number(req.query.page) || 1;
+  const searchKeyword = req.query.search;
 
-  const count = await RecyclingCollection.countDocuments({});
-  const recyclingLocations = await RecyclingCollection.find({})
-    .skip(pageSize * (page - 1))
-    .limit(pageSize);
+  try {
+    const query = searchKeyword ? {
+      locationName: { $regex: new RegExp(searchKeyword, 'i') }
+    } : {};
 
-  res.json({
-    data: recyclingLocations,
-    page,
-    pages: Math.ceil(count / pageSize),
-  });
+    const count = await RecyclingCollection.countDocuments(query);
+    const recyclingLocations = await RecyclingCollection.find(query)
+      .sort({ _id: -1 })
+      .skip(pageSize * (page - 1))
+      .limit(pageSize);
+
+    res.json({
+      data: recyclingLocations,
+      page,
+      pages: Math.ceil(count / pageSize),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // @desc     Delete a recycling location

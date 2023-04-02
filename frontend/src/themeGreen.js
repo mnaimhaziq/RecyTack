@@ -81,8 +81,8 @@ function reverseTokens(tokensDark) {
               },
               primary: {
                 ...tokensLight.green,
-                main: tokensDark.green[300],
-                light: tokensDark.green[300],
+                main: tokensDark.green[700],
+                light: tokensDark.green[700],
               },
               neutral: {
                 ...tokensLight.grey,
