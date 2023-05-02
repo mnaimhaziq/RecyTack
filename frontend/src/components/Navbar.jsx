@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LightModeOutlined,
   DarkModeOutlined,
@@ -21,6 +21,8 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
+import jwt_decode from "jwt-decode";
+
 import { logout, reset } from "../features/auth/authSlice";
 
 function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
@@ -33,6 +35,7 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
   const handleClick = (e) => setAnchorEl(e.currentTarget);
   const handleClose =() => setAnchorEl(null);
 
+  
   const setModeHandler = () => {
     dispatch(setMode());
   };
@@ -44,15 +47,21 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
 
   };
   const profilehandler = () => {
-    navigate(`/profile`)
+    navigate(`/userprofile`)
   }
+
+
 
   return (
     <AppBar
       sx={{
-        position: "static",
-        background: "none",
+        position: "sticky",
+        background: `${theme.palette.background.default}`,
         boxShadow: "none",
+        // boxShadow: `0px 0.5px 3px rgb(255,255,255)`,
+        borderBottom: `0.5px solid ${theme.palette.grey[700]}`, 
+        zIndex: "500",
+        marginBottom: "2rem"
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -75,17 +84,17 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
          
           <FlexBetween>
             <Button onClick={handleClick} sx={{display: "flex", justifyContent: "space-between", alignItems:"center", textTransform: "none", gap: "1rem"}}>
-            {/* <Box
+            <Box
                 component="img"
                 alt="profile"
-                src=""
+                src={user.picture.url}
                 height="32px"
                 width="32px"
                 borderRadius="50%"
                 sx={{ objectFit: "cover" }}
-              /> */}
-              <PersonOutlined  sx={{height:"32px",
-                width:"32px", color: theme.palette.neutral[10]}}/>
+              />
+              {/* <PersonOutlined  sx={{height:"32px",
+                width:"32px", color: theme.palette.neutral[10]}}/> */}
               {isNonMobile && <>
                 <Box textAlign="left">
                 <Typography
