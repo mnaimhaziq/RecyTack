@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
-import { themeSettings } from "./themeGreen";
+import { themeSettings } from "./theme";
 import { useSelector } from "react-redux";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import Dashboard from "./scenes/Dashboard";
@@ -12,6 +12,9 @@ import Register from "./scenes/Register"
 import Profile from "./scenes/Profile"
 import RecyclingHistory from "./scenes/RecyclingHistory"
 import RecyclingLocation from "./scenes/RecyclingLocation";
+import Education from "./scenes/Education";
+import Leaderboard from "./scenes/Leaderboard";
+import Feedbacks from "./scenes/Feedbacks";
 
 function App() {
   const mode = useSelector((state) => state.global.mode);
@@ -19,6 +22,7 @@ function App() {
 
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
+
 
   return (
     <div className="app">
@@ -31,8 +35,11 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/education" element={<Education />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/feedbacks" element={<Feedbacks />} />
               <Route path="/manageusers" element={<AllUsers />} />
-              <Route path="/manageprofile" element={<Profile />} />
+              <Route path="/userprofile" element={<Profile />} />
               <Route path="/recyclinghistory" element={<RecyclingHistory />} />
               <Route path="/recyclinglocation" element={<RecyclingLocation />} />
               <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />

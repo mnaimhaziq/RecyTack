@@ -4,6 +4,7 @@ import { Card } from "react-bootstrap";
 import { useTheme } from "@mui/material";
 
 function Users({ user }) {
+  console.log(user);
   const theme = useTheme();
   return (
     <Card
@@ -14,7 +15,8 @@ function Users({ user }) {
       }}
     >
       <Link to={``}>
-        <Card.Img src={user.image} variant="top" />
+       {user.picture &&  <Card.Img src={user.picture.url} variant="top"  style={{ width: "80px"}} />}
+       {/* { user.picture && <img src={user.picture.url} width="80px"/>} */}
       </Link>
 
       <Card.Body>

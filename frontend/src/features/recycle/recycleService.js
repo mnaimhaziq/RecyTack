@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = "/api/recycle/";
 
 // Get all recycle locations
-const getAllRecycleLocation = async (token, page, search) => {
+const getAllRecycleLocationByPageAndKeyword = async (token, page, search) => {
  
   
     const config = {
@@ -14,6 +14,19 @@ const getAllRecycleLocation = async (token, page, search) => {
     const response = await axios.get(API_URL + `location?page=${page}&search=${search}` ,config);
     return response.data;
   }
+
+  // Get all recycle locations
+const getAllRecycleLocation = async (token) => {
+ 
+  
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + `location` ,config);
+  return response.data;
+}
 
   // Create Recycle Collection
 const createRecycleCollection = async (newFormData, token) => {
@@ -30,6 +43,24 @@ const createRecycleCollection = async (newFormData, token) => {
   return response.data;
 };
 
+
+
+  // Create Recycling History
+  const createRecyclingHistory = async (newFormData, token) => {
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    const response = await axios.post(API_URL + "create", newFormData, config);
+  
+    return response.data;
+  };
+  
+
   const deleteRecycleCollection = async (id, token) => {
   
         const config = {
@@ -38,9 +69,21 @@ const createRecycleCollection = async (newFormData, token) => {
           },
         };
         await axios.delete(API_URL + `location/${id}`, config);
-        return id; // return the deleted user id to update the Redux store
+        return id; 
      
     }
+
+    const deleteRecycleHistory = async (id, token) => {
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      await axios.delete(API_URL + `delete/${id}`, config);
+      return id; 
+   
+  }
 
     const getRecycleLocationById = async (id, token) => {
   
@@ -54,6 +97,30 @@ const createRecycleCollection = async (newFormData, token) => {
    
   }
 
+  const getRecycleHistoryById = async (id, token) => {
+  
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axios.get(API_URL + `getRecyclingHistoryById/${id}`, config);
+    return response.data; // return the deleted user id to update the Redux store
+ 
+}
+
+  const getRecycleHistoryByUserId = async (id, page, token) => {
+  
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axios.get(API_URL + `getRecyclingHistory/${id}?page=${page}`, config);
+    return response.data; // return the deleted user id to update the Redux store
+ 
+}
+
   const updateRecycleLocationById = async (id, newFormData, token) => {
   
     const config = {
@@ -66,27 +133,32 @@ const createRecycleCollection = async (newFormData, token) => {
  
 }
 
-
-  // Get all Waste Types 
-const getAllWasteTypes = async (token) => {
+const updateRecycleHistoryById = async (id, newFormData, token) => {
   
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.put(API_URL + `recycling-history/${id}`, newFormData, config);
+  return response.data; // return the deleted user id to update the Redux store
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    const response = await axios.get(API_URL + `wasteType` ,config);
-    return response.data;
-  }
+}
+
+
 
   const recycleService = {
    getAllRecycleLocation,
-   getAllWasteTypes,
+   getAllRecycleLocationByPageAndKeyword,
    createRecycleCollection,
+   createRecyclingHistory,
    deleteRecycleCollection,
+   deleteRecycleHistory,
    getRecycleLocationById,
+   getRecycleHistoryById,
+   getRecycleHistoryByUserId,
    updateRecycleLocationById,
+   updateRecycleHistoryById
   };
   
   export default recycleService;
