@@ -6,10 +6,10 @@ import { useSelector } from "react-redux";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import Dashboard from "./scenes/Dashboard";
 import Layout from "./scenes/Layout";
-import AllUsers from "./scenes/AllUsers"
-import Login from "./scenes/Login"
-import Profile from "./scenes/Profile"
-import RecyclingHistory from "./scenes/RecyclingHistory"
+import AllUsers from "./scenes/AllUsers";
+import Login from "./scenes/Login";
+import Profile from "./scenes/Profile";
+import RecyclingHistory from "./scenes/RecyclingHistory";
 import RecyclingLocation from "./scenes/RecyclingLocation";
 
 function App() {
@@ -32,8 +32,16 @@ function App() {
               <Route path="/users" element={<AllUsers />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/recyclinghistory" element={<RecyclingHistory />} />
-              <Route path="/recyclinglocation" element={<RecyclingLocation />} />
-              <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+              <Route
+                path="/recyclinglocation"
+                element={<RecyclingLocation />}
+              />
+              <Route
+                path="*"
+                element={
+                  <Navigate to={user ? "/dashboard" : "/login"} replace />
+                }
+              />
             </Route>
           </Routes>
         </ThemeProvider>

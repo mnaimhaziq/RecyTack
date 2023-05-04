@@ -6,16 +6,19 @@ import colors from "colors";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import recycleRoutes from "./routes/recycleRoutes.js";
+import cors from "cors";
 
 dotenv.config();
 connectDB();
 
 const app = express();
 
+app.use(cors());
+
 app.use(express.json());
 if (process.env.NODE_ENV === "development") {
-    app.use(morgan("dev"));
-  }
+  app.use(morgan("dev"));
+}
 
 app.get("/", (req, res) => {
   res.send("API is running....");
