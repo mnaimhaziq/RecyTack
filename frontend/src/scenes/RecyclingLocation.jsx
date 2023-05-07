@@ -21,7 +21,7 @@ import {
   PaginationItem,
   useMediaQuery
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Add } from "@mui/icons-material";
 import Header from "../components/Header";
 import {
   getAllRecycleLocationByPageAndKeyword,
@@ -226,7 +226,7 @@ const RecyclingLocation = () => {
                 color: theme.palette.neutral[1000],
               }, }}
           >
-            Create New Recycling Location
+           <Add/> Create New Recycling Location
           </Button>
         </Box>
       </Box>

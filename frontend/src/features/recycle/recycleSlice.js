@@ -6,7 +6,8 @@ const initialState = {
   recycleLocationById: {},
   recycleHistoryById: {},
   recyclingHistories: [],
-
+  recyclingHistoriesTop8: [],
+  mostRecycledWasteType: {},
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -194,14 +195,58 @@ export const getRecycleHistoryById = createAsyncThunk(
 // Get Recycle History by User ID
 export const getRecycleHistoryByUserId = createAsyncThunk(
   "recycle/getRecycleHistoryByUserId",
-  async ({ id, page, token }, thunkAPI) => {
+  async ({ id, token }, thunkAPI) => {
     try {
       const recycleHistory = await recycleService.getRecycleHistoryByUserId(
+        id,
+        token
+      );
+      return recycleHistory;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Get Most Recycled Waste Type by id
+export const getMostRecycledWasteType = createAsyncThunk(
+  "recycle/getMostRecycledWasteType",
+  async ({ id, token }, thunkAPI) => {
+    try {
+      const mostRecycledWasteType= await recycleService.getMostRecycledWasteType(
+        id,
+        token
+      );
+      return mostRecycledWasteType;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Get Recycle History by User ID and Page
+export const getRecycleHistoryByUserIdAndPage = createAsyncThunk(
+  "recycle/getRecycleHistoryByUserIdAndPage",
+  async ({ id, page, token }, thunkAPI) => {
+    try {
+      const recyclingHistoriesTop8 = await recycleService.getRecycleHistoryByUserIdAndPage(
         id,
         page,
         token
       );
-      return recycleHistory;
+      return recyclingHistoriesTop8;
     } catch (error) {
       const message =
         (error.response &&
@@ -370,13 +415,25 @@ export const recycleSlice = createSlice({
         state.isSuccess = true;
         state.recycleHistoryById = action.payload;
       })
-      .addCase(getRecycleHistoryById.rejected, (state, action) => {
+      .addCase(getRecycleHistoryById.rejected, (state, action) => { 
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
         state.recycleHistoryById = {};
+      }).addCase(getMostRecycledWasteType.pending, (state) => {
+        state.isLoading = true;
       })
-      .addCase(getRecycleHistoryByUserId.pending, (state) => {
+      .addCase(getMostRecycledWasteType.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.mostRecycledWasteType = action.payload;
+      })
+      .addCase(getMostRecycledWasteType.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.mostRecycledWasteType = {};
+      }).addCase(getRecycleHistoryByUserId.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getRecycleHistoryByUserId.fulfilled, (state, action) => {
@@ -389,6 +446,20 @@ export const recycleSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         state.recyclingHistories = [];
+      })
+      .addCase(getRecycleHistoryByUserIdAndPage.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getRecycleHistoryByUserIdAndPage.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.recyclingHistoriesTop8 = action.payload;
+      })
+      .addCase(getRecycleHistoryByUserIdAndPage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.recyclingHistoriesTop8 = [];
       })
       .addCase(updateRecycleLocationById.pending, (state) => {
         state.isLoading = true;

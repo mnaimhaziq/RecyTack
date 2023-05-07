@@ -2,6 +2,7 @@ import RecyclingCollection from "../models/recyclingCollectionModel.js";
 import WasteType from "../models/wasteTypeModel.js";
 import RecyclingHistory from "../models/recyclingHistoryModel.js";
 import asyncHandler from "express-async-handler";
+import mongoose from "mongoose";
 
 // @desc     Create new recycling location
 // @route    POST /api/recycling-locations
@@ -41,7 +42,7 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
 // @desc     Get all recycling locations in reverse order or search by keyword
 // @route    GET /api/recycling-locations/reverse?page=1&search=keyword
 // @access   Private
-const getAllRecyclingLocations = asyncHandler(async (req, res, next) => {
+const getAllRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
   const pageSize = 10;
   let page = Number(req.query.page) || 1;
   const searchKeyword = req.query.search || "";
@@ -176,11 +177,23 @@ const getRecyclingHistoryById = asyncHandler(async (req, res) => {
   res.json(recyclingHistory);
 });
 
-// @desc  GET Recycling History By User ID
+const getRecyclingHistoryByUserId = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const recyclingHistory = await RecyclingHistory.find({ user: userId });
+  
+  if (!recyclingHistory) {
+    res.status(404);
+    throw new Error("Recycling History not found");
+  }
+
+  res.status(200).json(recyclingHistory);
+});
+
+// @desc  GET Recycling History By User ID and Page
 // @route    GET /api/recycle/getRecyclingHistory/:id
 // @access   Private
-const getRecyclingHistoryByUserId = async (req, res) => {
-  const pageSize = 10;
+const getRecyclingHistoryByUserIdAndPage = async (req, res) => {
+  const pageSize = 8;
   let page = Number(req.query.page) || 1;
   const startIndex = (page - 1) * pageSize;
   const endIndex = page * pageSize;
@@ -230,6 +243,8 @@ const getRecyclingHistoryByUserId = async (req, res) => {
   }
 };
 
+
+
 // @desc     Update a recycling history
 // @route    PUT /api/recycling-history/:id
 // @access   Private/Admin
@@ -269,15 +284,42 @@ const deleteRecyclingHistory = asyncHandler(async (req, res) => {
   }
 });
 
+const getMostRecycledWasteType = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const recyclingHistory = await RecyclingHistory.find({ user: userId });
+
+  if (!recyclingHistory) {
+    res.status(404);
+    throw new Error("Recycling History not found");
+  }
+
+  const wasteTypeMap = {};
+  recyclingHistory.forEach((record) => {
+    if (wasteTypeMap[record.wasteType]) {
+      wasteTypeMap[record.wasteType] += record.quantity;
+    } else {
+      wasteTypeMap[record.wasteType] = record.quantity;
+    }
+  });
+
+  const sortedWasteTypes = Object.entries(wasteTypeMap).sort((a, b) => b[1] - a[1]);
+
+  const mostRecycledWasteType = sortedWasteTypes[0][0];
+
+  res.status(200).json({ mostRecycledWasteType });
+});
+
 export {
   createRecyclingLocation,
-  getAllRecyclingLocations,
+  getAllRecyclingLocationsByPage,
   deleteRecyclingLocation,
   updateRecyclingLocation,
   getRecyclingLocationById,
   createRecycle,
   getRecyclingHistoryById,
+  getRecyclingHistoryByUserId,
   deleteRecyclingHistory,
   updateRecyclingHistory,
-  getRecyclingHistoryByUserId,
+  getRecyclingHistoryByUserIdAndPage,
+  getMostRecycledWasteType,
 };

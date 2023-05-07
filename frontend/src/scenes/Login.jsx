@@ -5,9 +5,12 @@ import { Card, Button, Form } from "react-bootstrap";
 import "./AuthScreen.css";
 import { login, reset } from "../features/auth/authSlice";
 import Spinner from "../components/Spinner";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { getRecycleHistoryByUserId } from "../features/recycle/recycleSlice";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  getRecycleHistoryByUserId,
+  getRecycleHistoryByUserIdAndPage,
+} from "../features/recycle/recycleSlice";
 const LoginScreen = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -15,7 +18,7 @@ const LoginScreen = () => {
   });
 
   const { email, password } = formData;
-  const page = null
+  const page = null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -26,15 +29,20 @@ const LoginScreen = () => {
     if (isSuccess || user) {
       navigate("/dashboard");
       dispatch(
-        getRecycleHistoryByUserId({ id: user._id, page , token: user.token })
-      ); 
+        getRecycleHistoryByUserIdAndPage({
+          id: user._id,
+          page,
+          token: user.token,
+        })
+      );
+      dispatch(getRecycleHistoryByUserId({ id: user._id, token: user.token }));
     }
-    if(isError){
+
+    if (isError) {
       toast.error("Invalid Credentials. ");
       return;
     }
-   
-  }, [user, isSuccess, isError,navigate]);
+  }, [user, isSuccess, isError, navigate]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -45,20 +53,17 @@ const LoginScreen = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    if(email === '' || password === ''){
+    if (email === "" || password === "") {
       toast.error("Please fill in all required fields.");
       return;
+    } else {
+      const userData = {
+        email,
+        password,
+      };
+      await dispatch(login(userData));
     }
-
-    else{
-
-    const userData = {
-      email,
-      password,
-    };
-    await dispatch(login(userData));
-   
-  };}
+  };
 
   // if (isLoading) {
   //   return <Spinner />;
@@ -66,7 +71,7 @@ const LoginScreen = () => {
 
   return (
     <div className="auth-body">
-      <ToastContainer  />
+      <ToastContainer />
       <Card className="auth ">
         <Card.Title as="h2" className="text-center mb-5">
           Login
@@ -80,7 +85,6 @@ const LoginScreen = () => {
               name="email"
               value={email}
               onChange={onChange}
-             
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="password">

@@ -25,7 +25,7 @@ import {
   FormControl,
   useMediaQuery,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Add } from "@mui/icons-material";
 import Header from "../components/Header";
 import {
   getAllRecycleLocation,
@@ -34,6 +34,7 @@ import {
   deleteRecycleHistory,
   getRecycleHistoryById,
   updateRecycleHistoryById,
+  getRecycleHistoryByUserIdAndPage,
 } from "../features/recycle/recycleSlice";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -57,7 +58,7 @@ const RecyclingHistory = () => {
   );
 
   const recyclingHistories = useSelector(
-    (state) => state.recycle.recyclingHistories
+    (state) => state.recycle.recyclingHistoriesTop8
   );
   const recyclingHistory = useSelector((state) => state.recycle.recycleHistoryById)
 
@@ -68,7 +69,7 @@ const RecyclingHistory = () => {
   useEffect(() => {
     dispatch(getAllRecycleLocation(user.token));
     dispatch(
-      getRecycleHistoryByUserId({ id: user._id, page, token: user.token })
+      getRecycleHistoryByUserIdAndPage({ id: user._id, page, token: user.token })
     );
     setTotalPages(recyclingHistories.pages);
   }, [dispatch, user.token, page, user._id, recyclingHistories.pages]);
@@ -91,10 +92,12 @@ const RecyclingHistory = () => {
     setOpenEditDialog(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this recycling history?")) {
-      dispatch(deleteRecycleHistory({ id, token: user.token }));
-      dispatch(getRecycleHistoryByUserId({ id: user._id, page, token: user.token }));
+      await dispatch(deleteRecycleHistory({ id, token: user.token }))
+        .then(() => {
+          dispatch(getRecycleHistoryByUserIdAndPage({ id: user._id, page, token: user.token }));
+        });
       toast.error("Recycling Location Has Been Deleted ");
     }
   };
@@ -114,20 +117,51 @@ const RecyclingHistory = () => {
       .required("This field is Required"),
   });
 
+  const calculateQuantity = (quantity, wasteType) => {
+    let conversionFactor;
+  
+    if (wasteType === 'Bottle') {
+      conversionFactor = 0.025;
+    } else if (wasteType === 'Can') {
+      conversionFactor = 0.01;
+    } else {
+      conversionFactor = 1;
+    }
+  
+    const quantityInKg = quantity * conversionFactor;
+    return parseFloat(quantityInKg.toFixed(2));
+  };
+
+  const reverseCalculateQuantity = (quantityInKg, wasteType) => {
+    let conversionFactor;
+  
+    if (wasteType === 'Bottle') {
+      conversionFactor = 0.025;
+    } else if (wasteType === 'Can') {
+      conversionFactor = 0.01;
+    } else {
+      conversionFactor = 1;
+    }
+  
+    const quantity = Math.round(quantityInKg / conversionFactor);
+    return quantity;
+  };
+
   const onSubmit = async (values, { resetForm }) => {
     const { recyclingLocationId, recyclingMethod, quantity, wasteType } = values;
 
     const newFormData = {
       recyclingLocationId,
       recyclingMethod,
-      quantity,
+      quantity: calculateQuantity(quantity, wasteType),
       wasteType,
     };
 
-    await dispatch(createRecyclingHistory({ newFormData, token: user.token }));
+    await dispatch(createRecyclingHistory({ newFormData, token: user.token })).then(() =>{
     dispatch(
-      getRecycleHistoryByUserId({ id: user._id, page, token: user.token })
-    );
+      getRecycleHistoryByUserIdAndPage({ id: user._id, page, token: user.token })
+    )});
+    toast.success("New Recycling History Created ");
     resetForm();
     setOpen(false);
   };
@@ -139,7 +173,7 @@ const RecyclingHistory = () => {
      
       recyclingLocationId,
       recyclingMethod,
-      quantity,
+      quantity: calculateQuantity(quantity, wasteType),
       wasteType,
     };
 
@@ -147,7 +181,7 @@ const RecyclingHistory = () => {
 
     await dispatch(updateRecycleHistoryById({ id,newFormData, token: user.token }));
     dispatch(
-      getRecycleHistoryByUserId({ id: user._id, page, token: user.token })
+      getRecycleHistoryByUserIdAndPage({ id: user._id, page, token: user.token })
     );
     toast.success( "Recycling History Has Been Edited ");
     resetForm();
@@ -182,7 +216,7 @@ const RecyclingHistory = () => {
               },
             }}
           >
-            Create
+            <Add/> Create New Recycling History
           </Button>
         </Box>
       </Box>
@@ -239,7 +273,8 @@ const RecyclingHistory = () => {
                     >
                       <MenuItem value="curbside">Curbside Recycling</MenuItem>
                       <MenuItem value="drop-off">Drop-off Recycling</MenuItem>
-                      <MenuItem value="composting">Composting </MenuItem>
+                      <MenuItem value="composting">Composting</MenuItem>
+                      <MenuItem value="E-waste Recycling">E-waste Recycling</MenuItem>
                     </Select>
                     <InputLabel htmlFor="recyclingMethod">
                       Recycling Method
@@ -259,6 +294,12 @@ const RecyclingHistory = () => {
                       <MenuItem value="Glass">Glass </MenuItem>
                       <MenuItem value="Metal">
                         Metal
+                      </MenuItem>
+                      <MenuItem value="Bottle">
+                        Bottle (Bottle)
+                      </MenuItem>
+                      <MenuItem value="Can">
+                        Can (Can)
                       </MenuItem>
                     </Select>
                     <InputLabel htmlFor="wasteType">
@@ -394,7 +435,7 @@ const RecyclingHistory = () => {
                 id: recyclingHistory._id,
                 recyclingLocationId: recyclingHistory.recyclingLocation,
                 recyclingMethod: recyclingHistory.recyclingMethod,
-                quantity: recyclingHistory.quantity,
+                quantity: reverseCalculateQuantity(recyclingHistory.quantity, recyclingHistory.wasteType),
                 wasteType: recyclingHistory.wasteType,
               }}
               validationSchema={validationSchema}
@@ -438,7 +479,8 @@ const RecyclingHistory = () => {
                     >
                       <MenuItem value="curbside">Curbside Recycling</MenuItem>
                       <MenuItem value="drop-off">Drop-off Recycling</MenuItem>
-                      <MenuItem value="composting">Composting </MenuItem>
+                      <MenuItem value="composting">Composting</MenuItem>
+                      <MenuItem value="E-waste Recycling">E-waste Recycling</MenuItem>
                     </Select>
                     <InputLabel htmlFor="recyclingMethod">
                       Recycling Method
@@ -458,6 +500,12 @@ const RecyclingHistory = () => {
                       <MenuItem value="Glass">Glass </MenuItem>
                       <MenuItem value="Metal">
                         Metal
+                      </MenuItem>
+                      <MenuItem value="Bottle">
+                        Bottle (Bottle)
+                      </MenuItem>
+                      <MenuItem value="Can">
+                        Can (Can)
                       </MenuItem>
                     </Select>
                     <InputLabel htmlFor="wasteType">

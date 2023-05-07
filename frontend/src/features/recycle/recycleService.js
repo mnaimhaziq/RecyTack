@@ -109,14 +109,38 @@ const createRecycleCollection = async (newFormData, token) => {
  
 }
 
-  const getRecycleHistoryByUserId = async (id, page, token) => {
+  const getRecycleHistoryByUserId = async (id, token) => {
   
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await axios.get(API_URL + `getRecyclingHistory/${id}?page=${page}`, config);
+    const response = await axios.get(API_URL + `getRecyclingHistoryByUserId/${id}`, config);
+    return response.data; // return the deleted user id to update the Redux store
+ 
+}
+
+const getMostRecycledWasteType = async (id, token) => {
+  
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + `getMostRecycledWasteType/${id}`, config);
+  console.log(response.data)
+  return response.data; // return the deleted user id to update the Redux store
+
+}
+  const getRecycleHistoryByUserIdAndPage = async (id, page, token) => {
+  
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axios.get(API_URL + `getRecyclingHistoryByPage/${id}?page=${page}`, config);
     return response.data; // return the deleted user id to update the Redux store
  
 }
@@ -157,8 +181,10 @@ const updateRecycleHistoryById = async (id, newFormData, token) => {
    getRecycleLocationById,
    getRecycleHistoryById,
    getRecycleHistoryByUserId,
+   getRecycleHistoryByUserIdAndPage,
    updateRecycleLocationById,
-   updateRecycleHistoryById
+   updateRecycleHistoryById,
+   getMostRecycledWasteType,
   };
   
   export default recycleService;
