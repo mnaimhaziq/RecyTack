@@ -5,18 +5,23 @@ import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
+
 function Layout() {
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
-
   const navigate = useNavigate(); 
+
+ 
 
   useEffect(() => {
     // redirect to login page if user is null
-    if (!user) {
+    if(!user &&  window.location.pathname === '/register'){
+      navigate('/register')
+    }
+    else if (!user ) {
       navigate('/login');
     }
   }, [user, navigate]);
@@ -39,9 +44,11 @@ function Layout() {
             isNonMobile={isNonMobile}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
+            
           />
         )}
         { <Outlet />}
+        
       </Box>
     </Box>
   );

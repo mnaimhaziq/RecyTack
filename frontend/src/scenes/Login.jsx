@@ -2,11 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Card, Button, Form } from "react-bootstrap";
-import { toast } from "react-toastify";
-import "./LoginScreen.css";
+import "./AuthScreen.css";
 import { login, reset } from "../features/auth/authSlice";
 import Spinner from "../components/Spinner";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  getMostRecycledWasteType,
+  getRecycleHistoryByUserId,
+  getRecycleHistoryByUserIdAndPage,
+} from "../features/recycle/recycleSlice";
 const LoginScreen = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -14,22 +19,36 @@ const LoginScreen = () => {
   });
 
   const { email, password } = formData;
-
+  const page = null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth);
-  const { user, isLoading, isSuccess, isError, message } = auth;
+  const { user, isLoading, isSuccess, isError } = auth;
+
+  const dispatchForDashboard = async() => {
+    await dispatch(
+      getRecycleHistoryByUserIdAndPage({
+        id: user._id,
+        page,
+        token: user.token,
+      })
+    )
+    .then(() =>{dispatch(getRecycleHistoryByUserId({ id: user._id, token: user.token }));})
+    .then(() =>{dispatch(getMostRecycledWasteType({id: user._id, token: user.token}));})
+    .then(() =>{navigate("/dashboard");})
+  }
 
   useEffect(() => {
-    if (isError) {
-      toast.error(message);
-    }
     if (isSuccess || user) {
-      navigate("/dashboard");
+     dispatchForDashboard();
     }
-    dispatch(reset());
-  }, [user, isError, isSuccess, message, navigate, dispatch]);
+
+    if (isError) {
+      toast.error("Invalid Credentials. ");
+      return;
+    }
+  }, [user, isSuccess, isError, navigate]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -38,23 +57,28 @@ const LoginScreen = () => {
     }));
   };
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
-
-    const userData = {
-      email,
-      password,
-    };
-    dispatch(login(userData))
+    if (email === "" || password === "") {
+      toast.error("Please fill in all required fields.");
+      return;
+    } else {
+      const userData = {
+        email,
+        password,
+      };
+      await dispatch(login(userData));
+    }
   };
 
-  if (isLoading) {
-    return <Spinner />;
-  }
+  // if (isLoading) {
+  //   return <Spinner />;
+  // }
 
   return (
-    <div className="login-body">
-      <Card className="login ">
+    <div className="auth-body">
+      <ToastContainer />
+      <Card className="auth ">
         <Card.Title as="h2" className="text-center mb-5">
           Login
         </Card.Title>

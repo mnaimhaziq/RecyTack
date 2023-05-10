@@ -1,79 +1,139 @@
-import React, { useEffect, useRef } from "react";
-import Chart from "chart.js/auto";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Box,
+  useMediaQuery,
+  Paper,
+  useTheme,
+  Container,
+  Unstable_Grid2 as Grid,
+} from "@mui/material";
+import Header from "../components/Header";
+import { styled } from "@mui/material/styles";
+import { useDispatch, useSelector } from "react-redux";
+import { DashboardTotalRecycling } from "../sections/DashboardTotalRecycling";
+import { DashboardPoint } from "../sections/DashboardPoint";
+import { DashboardMostType } from "../sections/DashboardMostType";
+import { DashboardTypeOfRecycling } from "../sections/DashboardTypeOfRecycling";
+import { getRecycleHistoryByUserId, getMostRecycledWasteType, getRecycleHistoryByUserIdAndPage } from "../features/recycle/recycleSlice";
+import { DashboardWelcome } from "../sections/DashboardWelcome";
+import { DashboardLatestHistory } from "../sections/DashboardLatestHistory";
+
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+}));
 
 function Dashboard() {
-  const chartRef = useRef();
-
+  const page = 1;
+  const isNonMobile = useMediaQuery("(min-width: 600px)");
+  const theme = useTheme();
+  const auth = useSelector((state) => state.auth);
+  const { user } = auth;
+  const dispatch = useDispatch();
+  const recyclingHistories = useSelector(
+    (state) => state.recycle.recyclingHistories
+  );
+  const  recyclingHistoriesTop8 = useSelector(
+    (state) => state.recycle.recyclingHistoriesTop8.data
+  );
+  const  mostRecycledWasteType = useSelector(
+    (state) => state.recycle.mostRecycledWasteType.mostRecycledWasteType
+  );
+  console.log("type: " +  mostRecycledWasteType);
   useEffect(() => {
-    const chartInstance = new Chart(chartRef.current, {
-      type: "line",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [
-          {
-            label: "Recycling Waste",
-            data: [120, 190, 90, 100, 220, 300],
-            fill: true,
-            borderColor: "#9c27b0",
-            tension: 0.1,
-          },
-        ],
-      },
-      options: {
-        plugins: {
-          title: {
-            color: "#ffffff", // change this to the color you want
-          },
-          legend: {
-            labels: {
-              color: "#ffffff", // change this to the color you want
-            },
-          },
-        },
-        scales: {
-          yAxes: [
-            {
-              ticks: {
-                beginAtZero: true,
-                fontColor: "#ffffff",
-                color: "#ffffff",
-              },
-            },
-            
-          ],
-          xAxes: [
-            {
-              ticks: {
-                fontColor: "#ffffff", // change this to the color you want for the tick labels
-                color: "#ffffff", // change this to the color you want for the tick lines
-              },
-            },],
-        },
-      },
-    });
-
-    return () => {
-      chartInstance.destroy();
-    };
-  }, []);
+    dispatch(getRecycleHistoryByUserIdAndPage({id: user._id, page, token: user.token,}))
+    dispatch(getRecycleHistoryByUserId({ id: user._id, token: user.token }));
+    dispatch(getMostRecycledWasteType({id: user._id, token: user.token}))
+  }, [dispatch, user]);
 
   return (
-    <>
-      <div>
-        <canvas
-          ref={chartRef}
-          style={{
-            width: "400px",
-            height: "300px",
-            maxWidth: "100%",
-            maxHeight: "100%",
-            margin: "0 auto",
-            display: "block",
-          }}
-        />
-      </div>
-      
-    </>
+    <Box m="1.5rem 2.5rem " p="0 0 4rem 0">
+      <Box
+        display={isNonMobile ? "flex" : "block"}
+        sx={{
+          alignItems: "center",
+          justifyContent: "space-between",
+          margin: "3rem"
+        }}
+      >
+        <Header title="DASHBOARD" />
+      </Box>
+
+      <Box component="main" sx={{ flexGrow: 1, py: 2 }}>
+        <Container maxWidth="xl">
+          <Grid container spacing={3}>
+            <Grid xs={12} sm={6} lg={3} >
+              <DashboardWelcome
+                sx={{
+                  height: "100%",
+                  backgroundColor: theme.palette.background.alt,
+                }}
+                value={75.5}
+                user={user}
+              />
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <DashboardTotalRecycling
+                difference={12}
+                positive
+                sx={{
+                  height: "100%",
+                  backgroundColor: theme.palette.background.alt,
+                }}
+                value={recyclingHistories.length}
+              />
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <DashboardPoint
+                difference={16}
+                positive={false}
+                sx={{
+                  height: "100%",
+                  backgroundColor: theme.palette.background.alt,
+                }}
+                value="230"
+              />
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <DashboardMostType
+                type={mostRecycledWasteType}
+                sx={{
+                  height: "100%",
+                  backgroundColor: theme.palette.background.alt,
+                }}
+              
+              />
+            </Grid>
+            <Grid xs={12} md={6} lg={4}>
+              <DashboardTypeOfRecycling
+                chartSeries={[63, 15, 22]}
+                labels={["Paper", "Bottle", "Plastic"]}
+                sx={{
+                  height: "100%",
+                  backgroundColor: theme.palette.background.alt,
+                }}
+              />
+            </Grid>
+
+            <Grid
+            xs={12}
+            md={6}
+            lg={8}
+            
+          >
+           
+            <DashboardLatestHistory
+              recyclingHistoriesTop8={recyclingHistoriesTop8}
+              sx={{ height: '100%', backgroundColor: theme.palette.background.alt, }}
+            />
+          </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

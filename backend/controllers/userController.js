@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import asyncHandler from "express-async-handler";
 import generateToken from "../utils/generateToken.js";
+import cloudinary from "../utils/cloudinary.js";
 
 // @desc     Auth user & get token
 // @route    POST /api/users/login
@@ -16,13 +17,13 @@ const authUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      picture: user.picture,
       phoneNumber: user.phoneNumber,
       address: user.address,
       token: generateToken(user._id),
     });
   } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
+    res.status(401).json({error: "Invalid email or password"});
   }
 });
 
@@ -31,19 +32,25 @@ const authUser = asyncHandler(async (req, res) => {
 // @route    POST /api/users/register
 // @access   Public
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password, phoneNumber, address } = req.body;
+    const { name, email, password, phoneNumber, picture, address } = req.body;
   
     const userExists = await User.findOne({ email });
   
     if (userExists) {
       res.status(400).json({ error: "User already exists" });
     }
+
+    if (picture) {
+      const uploadedResponse = await cloudinary.uploader.upload(picture, {
+        upload_preset: "recyTrack_users_picture",
+      });
   
     const user = await User.create({
       name,
       email,
       password,
       phoneNumber,
+      picture: uploadedResponse,
       address,
     });
   
@@ -53,10 +60,11 @@ const registerUser = asyncHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        picture: uploadedResponse,
         address: user.address,
         token: generateToken(user._id),
       });
-    } else {
+    }} else {
       res.status(400).json({ error: "Invalid user data" });
     }
   });
@@ -104,6 +112,7 @@ const getUsers = asyncHandler(async (req, res) => {
   const users = await User.find({}).select('-password');
   res.json(users);
 });
+
 
 
 

@@ -35,13 +35,14 @@ function AllUsers() {
   } 
   return (
     <Box m="1.5rem 2.5rem">
-        <Header title="Search" subtitle="Find your Family Members" />
-        <FlexBetween>
+        <Header title="Users" subtitle="Manage Users" />
+        <FlexBetween m="1rem 0 ">
           <FlexBetween
             backgroundColor={theme.palette.background.alt}
             borderRadius="9px"
             gap="3rem"
             p="0.1rem 1.5rem"
+            
           >
             <form onSubmit={submitHandler}>
             <InputBase placeholder="Search..." onChange={(e) => setKeyword(e.target.value)}/>

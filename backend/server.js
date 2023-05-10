@@ -1,12 +1,14 @@
 import express from "express";
 import path from "path";
+import cors from "cors"
 import dotenv from "dotenv";
 import morgan from "morgan";
 import colors from "colors";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import recycleRoutes from "./routes/recycleRoutes.js";
-import cors from "cors";
+import bodyParser from "body-parser";
+
 
 dotenv.config();
 connectDB();
@@ -14,6 +16,7 @@ connectDB();
 const app = express();
 
 app.use(cors());
+app.use(bodyParser.json({ limit: "50mb" }));
 
 app.use(express.json());
 if (process.env.NODE_ENV === "development") {

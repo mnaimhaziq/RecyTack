@@ -1,21 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LightModeOutlined,
   DarkModeOutlined,
   Menu as MenuIcon,
-  Search,
-  SettingsOutlined,
   ArrowDropDownOutlined,
+  PersonOutlined
 } from "@mui/icons-material";
 import FlexBetween from "./FlexBetween";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setMode } from "../features/globalSlice";
-import ProfileImage from "../assets/profile.jpeg";
 import {
   AppBar,
   IconButton,
-  InputBase,
   Toolbar,
   useTheme,
   Button,
@@ -24,7 +21,10 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
-import { logout, reset } from "../features/auth/authSlice";
+import jwt_decode from "jwt-decode";
+
+import { logout, resetUser } from "../features/auth/authSlice";
+import { resetRecycling } from "../features/recycle/recycleSlice";
 
 function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
   const dispatch = useDispatch();
@@ -36,26 +36,34 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
   const handleClick = (e) => setAnchorEl(e.currentTarget);
   const handleClose =() => setAnchorEl(null);
 
+  
   const setModeHandler = () => {
     dispatch(setMode());
   };
 
   const logoutHandler = () => {
     dispatch(logout());
-    dispatch(reset());
+    dispatch(resetUser());
+    dispatch(resetRecycling())
     navigate('/')
 
   };
   const profilehandler = () => {
-    navigate(`/profile`)
+    navigate(`/userprofile`)
   }
+
+
 
   return (
     <AppBar
       sx={{
-        position: "static",
-        background: "none",
+        position: "sticky",
+        background: `${theme.palette.background.default}`,
         boxShadow: "none",
+        // boxShadow: `0px 0.5px 3px rgb(255,255,255)`,
+        borderBottom: `0.5px solid ${theme.palette.grey[700]}`, 
+        zIndex: "500",
+        marginBottom: "2rem"
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -81,12 +89,14 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
             <Box
                 component="img"
                 alt="profile"
-                src={ProfileImage}
+                src={user.picture.url}
                 height="32px"
                 width="32px"
                 borderRadius="50%"
                 sx={{ objectFit: "cover" }}
               />
+              {/* <PersonOutlined  sx={{height:"32px",
+                width:"32px", color: theme.palette.neutral[10]}}/> */}
               {isNonMobile && <>
                 <Box textAlign="left">
                 <Typography

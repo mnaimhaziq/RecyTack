@@ -36,83 +36,87 @@ import { logout, reset } from "../features/auth/authSlice";
 
 const UserNavItems = [
   {
+    url: "dashboard",
     text: "Dashboard",
     icon: <HomeOutlined />,
   },
   {
+    url: "recyclinghistory",
     text: "Recycling History",
     icon: <History />,
   },
   {
+    url: "education",
     text: "Education",
     icon: <Article />,
   },
   {
+    url: "leaderboard",
     text: "Leaderboard",
     icon: <Leaderboard />,
   },
   {
-    text: "Data Visualization",
-    icon: <BarChart />,
-  },
-  {
+    url: "feedback",
     text: "Feedback",
     icon: <Feedback />,
   },
   {
+    url: "",
     text: "User",
     icon: null,
   },
   {
-    text: "Profile",
+    url: "manageprofile",
+    text: "Manage Profile",
     icon: <AccountCircle />,
-  },
-  {
-    text: "Logout",
-    icon: <Logout />,
   },
 ];
 
 const AdminNavItems = [
   {
+    url: "dashboard",
     text: "Dashboard",
     icon: <HomeOutlined />,
   },
   {
-    text: "Users",
-    icon: <GroupAdd />,
+    url: "recyclinghistory",
+    text: "Recycling History",
+    icon: <History />,
   },
   {
-    text: "Education",
-    icon: <Article />,
-  },
-  {
+    url: "recyclinglocation",
     text: "Recycling Location",
     icon: <Domain />,
   },
   {
+    url: "education",
+    text: "Education",
+    icon: <Article />,
+  },
+  {
+    url: "leaderboard",
     text: "Leaderboard",
     icon: <Leaderboard />,
   },
   {
-    text: "Data Visualization",
-    icon: <BarChart />,
-  },
-  {
+    url: "feedbacks",
     text: "Feedbacks",
     icon: <Feedback />,
   },
   {
+    url: "",
     text: "User",
     icon: null,
   },
   {
-    text: "Profile",
-    icon: <AccountCircle />,
+    url: "manageusers",
+    text: "Manage Users",
+    icon: <GroupAdd />,
   },
   {
-    text: "Logout",
-    icon: <Logout />,
+    url: "userprofile",
+    text: "User Profile",
+    icon: <AccountCircle />,
   },
 ];
 
@@ -133,18 +137,14 @@ function Sidebar({
     setActive(pathname.substring(1));
   }, [pathname]);
 
-  const logoutHandler = () => {
-    dispatch(logout());
-    dispatch(reset());
-    navigate("/");
-  };
+  
 
   const navItems = user && user.isAdmin ? AdminNavItems : UserNavItems;
 
   return (
     <Box component="nav">
       {isSidebarOpen && (
-        <Drawer
+        <Drawer 
           open={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
           variant="persistent"
@@ -157,6 +157,8 @@ function Sidebar({
               boxSixing: "border-box",
               borderWidth: isNonMobile ? 0 : "2px",
               width: drawerWidth,
+              zIndex: "1000",
+              elevation: 3
             },
           }}
         >
@@ -164,11 +166,21 @@ function Sidebar({
             <Box m="1.5rem 2rem 2rem 3rem">
               <FlexBetween>
                 <Box display="flex" alignItems="center" gap="0.5rem">
+                {/* <Box
+                component="img"
+                alt="profile"
+                src="../assets/recycleLogo.png"
+                height="32px"
+                width="32px"
+                borderRadius="50%"
+                sx={{ objectFit: "cover" }}
+              />  */}
+              
                   <Typography
                     m="0 0 0  2rem "
                     variant="h4"
                     fontWeight="bold"
-                    sx={{ color: theme.palette.green.main }}
+                    sx={{ color: theme.palette.primary.main }}
                   >
                     RECYTRACK
                   </Typography>
@@ -181,7 +193,7 @@ function Sidebar({
               </FlexBetween>
             </Box>
             <List sx={{ paddingBottom: "1.5rem" }}>
-              {navItems.map(({ text, icon }) => {
+              {navItems.map(({ url, text, icon }) => {
                 if (!icon) {
                   return (
                     <Typography
@@ -199,13 +211,13 @@ function Sidebar({
                   <ListItem key={text} sx={{ p: "0.3rem 0" }}>
                     <ListItemButton
                       onClick={() => {
-                        navigate(`/${lcText}`);
-                        setActive(lcText);
+                        navigate(`/${url}`);
+                        setActive(url);
                       }}
                       sx={{
                         backgroundColor:
                           active === lcText
-                            ? theme.palette.green.main
+                            ? theme.palette.primary.main
                             : "transparent",
                         color:
                           active === lcText
@@ -215,18 +227,18 @@ function Sidebar({
                           color:
                             active === lcText
                               ? theme.palette.neutral[10]
-                              : "black",
+                              : theme.palette.primary.main,
                           "& .MuiListItemIcon-root": {
                             color:
                               active === lcText
                                 ? theme.palette.neutral[10]
-                                : "black",
+                                : theme.palette.primary.main
                           },
                           "& .MuiListItemText-primary": {
                             color:
                               active === lcText
                                 ? theme.palette.neutral[10]
-                                : "black",
+                                : theme.palette.primary.main,
                           },
                         },
                       }}
