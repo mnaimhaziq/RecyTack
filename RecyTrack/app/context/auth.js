@@ -1,5 +1,5 @@
-import React, {useState, useEffect, createContext} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {useState, useEffect, createContext} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AuthContext = createContext();
 
@@ -13,16 +13,16 @@ const AuthProvider = ({children}) => {
         const loadFromAsyncStorage = async () => {
             let data = await AsyncStorage.getItem("auth-rn");
             const parsed = JSON.parse(data);
-            setState({...state, user: parsed.user, token: parsed.token});
+            setState({ ...state, user:parsed.user, token:parsed.token});
         };
-        loadFromAsyncStorage();
+        loadFromAsyncStorage()
     }, []);
 
     return (
         <AuthContext.Provider value={[state, setState]}>
             {children}
         </AuthContext.Provider>
-    )
-}
+    );
+};
 
-export { AuthContext, AuthProvider};
+export {AuthContext, AuthProvider};
