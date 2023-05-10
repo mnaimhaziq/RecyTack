@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "./AuthScreen.css";
 import { register, reset } from "../features/auth/authSlice";
 import Spinner from "../components/Spinner";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 const Register = () => {
   const [userImg, setUserImg] = useState("");
@@ -26,7 +27,8 @@ const Register = () => {
   const { street, city, postalCode, country } = address;
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const auth = useSelector((state) => state.auth);
   const { user, isLoading, isSuccess, isError, message } = auth;
 
@@ -154,7 +156,7 @@ const Register = () => {
               />
             </Form.Group>
             <Form.Group className="mb-2" controlId="confirmPassword">
-              <Form.Label>Confirm Password</Form.Label>
+            <Form.Label>{isSmallScreen ? 'Confirm Pass' : 'Confirm Password'}</Form.Label>
               <Form.Control
                 type="password"
                 placeholder="Confirm Password"

@@ -8,6 +8,7 @@ import Spinner from "../components/Spinner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
+  getMostRecycledWasteType,
   getRecycleHistoryByUserId,
   getRecycleHistoryByUserIdAndPage,
 } from "../features/recycle/recycleSlice";
@@ -25,17 +26,22 @@ const LoginScreen = () => {
   const auth = useSelector((state) => state.auth);
   const { user, isLoading, isSuccess, isError } = auth;
 
+  const dispatchForDashboard = async() => {
+    await dispatch(
+      getRecycleHistoryByUserIdAndPage({
+        id: user._id,
+        page,
+        token: user.token,
+      })
+    )
+    .then(() =>{dispatch(getRecycleHistoryByUserId({ id: user._id, token: user.token }));})
+    .then(() =>{dispatch(getMostRecycledWasteType({id: user._id, token: user.token}));})
+    .then(() =>{navigate("/dashboard");})
+  }
+
   useEffect(() => {
     if (isSuccess || user) {
-      navigate("/dashboard");
-      dispatch(
-        getRecycleHistoryByUserIdAndPage({
-          id: user._id,
-          page,
-          token: user.token,
-        })
-      );
-      dispatch(getRecycleHistoryByUserId({ id: user._id, token: user.token }));
+     dispatchForDashboard();
     }
 
     if (isError) {

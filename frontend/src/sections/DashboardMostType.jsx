@@ -8,8 +8,8 @@ import { Newspaper } from '@mui/icons-material';
 
 
 export const DashboardMostType = (props) => {
-  const { type,difference, positive = false, sx, value } = props;
-
+  const { type ,sx } = props;
+  
  
   return (
     <Card sx={sx}>
@@ -27,8 +27,8 @@ export const DashboardMostType = (props) => {
             >
               Most Type you recycle
             </Typography>
-            <Typography variant="h2" sx={{fontWeight: 'bold'}} >
-              {type.toUpperCase()}
+            <Typography variant="h2" sx={{fontWeight: 'bold', textTransform: 'uppercase'}} >
+              {type}
             </Typography>
           </Stack>
           <Avatar

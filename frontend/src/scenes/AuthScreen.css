@@ -1,8 +1,10 @@
 @import '../index.css';
 
 .auth-body {
-    background: rgba(175,222,246, 1);
-  background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%);
+    /* background: rgba(175,222,246, 1);
+  background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%); */
+  background: rgb(255,252,9);
+background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 100%);
     height: 100vh;
     width: 100%;
     display: flex;
@@ -35,8 +37,10 @@
 }
 
 .register-body {
-    background: rgba(175,222,246, 1);
-    background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%);
+    /* background: rgba(175,222,246, 1);
+    background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%); */
+    background: rgb(255,252,9);
+    background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 100%);
     height: 100vh;
     width: 100%;
     display: flex;

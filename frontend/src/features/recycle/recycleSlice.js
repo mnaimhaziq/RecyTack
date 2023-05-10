@@ -309,12 +309,19 @@ export const recycleSlice = createSlice({
   name: "recycle",
   initialState,
   reducers: {
-    reset: (state) => {
+    resetRecycling: (state) => {
       state.isLoading = false;
       state.isError = false;
       state.isSuccess = false;
       state.message = "";
       state.recycleLocationById = {};
+      state.error =  "";
+      state.recycleLocations =[];
+      state.recycleLocationById = {};
+      state.recycleHistoryById = {};
+      state.recyclingHistories = [];
+      state.recyclingHistoriesTop8 = [];
+      state.mostRecycledWasteType = {};
     },
   },
   extraReducers: (builder) => {
@@ -488,5 +495,5 @@ export const recycleSlice = createSlice({
   },
 });
 
-export const { reset } = recycleSlice.actions;
+export const { resetRecycling } = recycleSlice.actions;
 export default recycleSlice.reducer;

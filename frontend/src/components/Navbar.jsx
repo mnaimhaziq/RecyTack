@@ -23,7 +23,8 @@ import {
 } from "@mui/material";
 import jwt_decode from "jwt-decode";
 
-import { logout, reset } from "../features/auth/authSlice";
+import { logout, resetUser } from "../features/auth/authSlice";
+import { resetRecycling } from "../features/recycle/recycleSlice";
 
 function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
   const dispatch = useDispatch();
@@ -42,7 +43,8 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
 
   const logoutHandler = () => {
     dispatch(logout());
-    dispatch(reset());
+    dispatch(resetUser());
+    dispatch(resetRecycling())
     navigate('/')
 
   };

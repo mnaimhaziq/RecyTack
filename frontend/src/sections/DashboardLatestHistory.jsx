@@ -24,7 +24,8 @@ export const DashboardLatestHistory = (props) => {
   return (
     <Card sx={sx}>
       <CardHeader title="Latest Recycling History" />
-        <Box >
+      
+        <Box  sx={{ overflowX: 'auto' }}>
           <Table>
             <TableHead>
               <TableRow>

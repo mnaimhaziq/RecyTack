@@ -398,10 +398,11 @@ const RecyclingHistory = () => {
                         <Edit />
                       </IconButton>
                       <IconButton
+                        
                         aria-label="delete"
                         onClick={() => handleDelete(row._id)}
                       >
-                        <Delete />
+                        <Delete sx={{color:'#e00a33'}}/>
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -411,7 +412,7 @@ const RecyclingHistory = () => {
         </TableContainer>
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Pagination
-            sx={{ m: "1rem 0" }}
+            sx={{ m: "1rem 0", "& .Mui-selected": { backgroundColor: "rgba(13,110,253,0.4)" } }}
             count={totalPages}
             page={page}
             onChange={handlePageChange}
@@ -422,7 +423,7 @@ const RecyclingHistory = () => {
         </Box>
       </Paper>
       <Dialog open={openEditDialog} onClose={handleClose}>
-          <DialogTitle>Edit Recycling History for {recyclingHistory.createdAt}</DialogTitle>
+          <DialogTitle>Edit Recycling History for  {new Date(recyclingHistory.createdAt).toLocaleString()}</DialogTitle>
 
           <DialogContent
             sx={{

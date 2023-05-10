@@ -14,7 +14,7 @@ import { DashboardTotalRecycling } from "../sections/DashboardTotalRecycling";
 import { DashboardPoint } from "../sections/DashboardPoint";
 import { DashboardMostType } from "../sections/DashboardMostType";
 import { DashboardTypeOfRecycling } from "../sections/DashboardTypeOfRecycling";
-import { getRecycleHistoryByUserId, getMostRecycledWasteType } from "../features/recycle/recycleSlice";
+import { getRecycleHistoryByUserId, getMostRecycledWasteType, getRecycleHistoryByUserIdAndPage } from "../features/recycle/recycleSlice";
 import { DashboardWelcome } from "../sections/DashboardWelcome";
 import { DashboardLatestHistory } from "../sections/DashboardLatestHistory";
 
@@ -27,6 +27,7 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function Dashboard() {
+  const page = 1;
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const theme = useTheme();
   const auth = useSelector((state) => state.auth);
@@ -41,8 +42,9 @@ function Dashboard() {
   const  mostRecycledWasteType = useSelector(
     (state) => state.recycle.mostRecycledWasteType.mostRecycledWasteType
   );
- 
+  console.log("type: " +  mostRecycledWasteType);
   useEffect(() => {
+    dispatch(getRecycleHistoryByUserIdAndPage({id: user._id, page, token: user.token,}))
     dispatch(getRecycleHistoryByUserId({ id: user._id, token: user.token }));
     dispatch(getMostRecycledWasteType({id: user._id, token: user.token}))
   }, [dispatch, user]);
@@ -63,7 +65,7 @@ function Dashboard() {
       <Box component="main" sx={{ flexGrow: 1, py: 2 }}>
         <Container maxWidth="xl">
           <Grid container spacing={3}>
-            <Grid xs={12} sm={6} lg={3}>
+            <Grid xs={12} sm={6} lg={3} >
               <DashboardWelcome
                 sx={{
                   height: "100%",
@@ -120,11 +122,12 @@ function Dashboard() {
             xs={12}
             md={6}
             lg={8}
+            
           >
            
             <DashboardLatestHistory
               recyclingHistoriesTop8={recyclingHistoriesTop8}
-              sx={{ height: '100%' }}
+              sx={{ height: '100%', backgroundColor: theme.palette.background.alt, }}
             />
           </Grid>
           </Grid>
