@@ -25,7 +25,7 @@ function Login({ navigation }) {
     try {
       console.log(email, password);
       const resp = await axios.post(
-        "http://10.167.67.85:5000/api/users/login",
+        "http://10.167.67.184:5000/api/users/login",
         {
           email,
           password,

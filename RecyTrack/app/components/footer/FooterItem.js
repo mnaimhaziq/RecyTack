@@ -2,11 +2,18 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-const FooterItem = ({ name, text }) => {
+const FooterItem = ({ name, text, handlePress, screenName, routeName }) => {
+  const activeScreenColour = screenName === routeName && "darkblue";
+
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={handlePress}>
       <>
-        <MaterialIcons name={name} size={25} style={styles.fontStyle} />
+        <MaterialIcons
+          name={name}
+          size={25}
+          style={styles.fontStyle}
+          color={activeScreenColour}
+        />
       </>
     </TouchableOpacity>
   );
