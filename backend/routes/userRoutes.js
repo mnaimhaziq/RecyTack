@@ -3,8 +3,10 @@ import { admin, protect } from "../middleware/authMiddleware.js";
 import { authUser, getUsers, registerUser, updateUserProfile,  } from "../controllers/userController.js";
 const router = express.Router();
 
-router.route("/").get(protect, admin, getUsers) // get all users
-router.post("/login", authUser); // login
-router.post("/register", registerUser); // register
-router.route("/profile").put(protect,updateUserProfile) // update user profile
+// Users 
+router.route("/getAllUsers").get(protect, admin, getUsers)                 // Admin Get All Users
+router.post("/login", authUser);                                // Login
+router.post("/register", registerUser);                         // Register
+router.route("/profile").put(protect,updateUserProfile)         // update User Profile
+
 export default router;

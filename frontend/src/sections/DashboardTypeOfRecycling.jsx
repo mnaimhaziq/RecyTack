@@ -1,15 +1,8 @@
 import PropTypes from "prop-types";
-import { Note } from "@mui/icons-material";
-import { Liquor } from "@mui/icons-material";
-import { LocalOffer } from "@mui/icons-material";
 import {
-  Box,
   Card,
   CardContent,
   CardHeader,
-  Stack,
-  SvgIcon,
-  Typography,
   useTheme,
 } from "@mui/material";
 import MyChart from "../components/chart";
@@ -21,17 +14,14 @@ const useChartOptions = (labels) => {
     chart: {
       background: "transparent",
     },
-    colors: [
-      theme.palette.primary.main,
-      theme.palette.success.main,
-      theme.palette.warning.main,
-    ],
+   
     dataLabels: {
       enabled: false,
     },
+    colors: [ "#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ac"],
     labels,
     legend: {
-      show: false,
+      position: 'bottom',
     },
     plotOptions: {
       pie: {
@@ -62,23 +52,7 @@ const useChartOptions = (labels) => {
   };
 };
 
-const iconMap = {
-  Paper: (
-    <SvgIcon>
-      <Note/>
-    </SvgIcon>
-  ),
-  Bottle: (
-    <SvgIcon>
-      <Liquor/>
-    </SvgIcon>
-  ),
-  Plastic: (
-    <SvgIcon>
-      <LocalOffer/>
-    </SvgIcon>
-  ),
-};
+
 
 export const DashboardTypeOfRecycling = (props) => {
   const { chartSeries, labels, sx } = props;
@@ -87,43 +61,13 @@ export const DashboardTypeOfRecycling = (props) => {
   return (
     <Card sx={sx}>
       <CardHeader title="Recycling Material" />
-      <CardContent>
-        <MyChart
+
+      <CardContent  sx={{ display: "flex", justifyContent: "center" ,alignItems: "center" ,height: "100%", padding: '0', margin: '0'}} >
+        <MyChart 
           chartOptions={chartOptions}
           chartSeries={chartSeries}
           type="donut"
-          // width: 100%;
         />
-        <Stack
-          alignItems="center"
-          direction="row"
-          justifyContent="center"
-          spacing={2}
-          sx={{ mt: 2 }}
-        >
-          {chartSeries.map((item, index) => {
-            const label = labels[index];
-
-            return (
-              <Box
-                key={label}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                {iconMap[label]}
-                <Typography sx={{ my: 1 }} variant="h6">
-                  {label}
-                </Typography>
-                <Typography color="text.secondary" variant="subtitle2">
-                  {item}%
-                </Typography>
-              </Box>
-            );
-          })}
-        </Stack>
       </CardContent>
     </Card>
   );

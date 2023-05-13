@@ -59,9 +59,9 @@ export const updateProfile = createAsyncThunk("auth/updateProfile", async (user,
 });
 
 //Get All Users
-export const getAllUsers = createAsyncThunk("auth/getAllUsers", async (token, thunkAPI) => {
+export const getAllUsers = createAsyncThunk("auth/getAllUsers", async ({token, page, search}, thunkAPI) => {
   try {
-    const users = await authService.getAllUsers(token);
+    const users = await authService.getAllUsers(token, page, search);
     return users;
   } catch (error) {
     const message =

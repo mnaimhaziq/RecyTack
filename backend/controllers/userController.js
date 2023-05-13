@@ -23,28 +23,27 @@ const authUser = asyncHandler(async (req, res) => {
       token: generateToken(user._id),
     });
   } else {
-    res.status(401).json({error: "Invalid email or password"});
+    res.status(401).json({ error: "Invalid email or password" });
   }
 });
-
 
 // @desc     Register new user
 // @route    POST /api/users/register
 // @access   Public
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password, phoneNumber, picture, address } = req.body;
-  
-    const userExists = await User.findOne({ email });
-  
-    if (userExists) {
-      res.status(400).json({ error: "User already exists" });
-    }
+  const { name, email, password, phoneNumber, picture, address } = req.body;
 
-    if (picture) {
-      const uploadedResponse = await cloudinary.uploader.upload(picture, {
-        upload_preset: "recyTrack_users_picture",
-      });
-  
+  const userExists = await User.findOne({ email });
+
+  if (userExists) {
+    res.status(400).json({ error: "User already exists" });
+  }
+
+  if (picture) {
+    const uploadedResponse = await cloudinary.uploader.upload(picture, {
+      upload_preset: "recyTrack_users_picture",
+    });
+
     const user = await User.create({
       name,
       email,
@@ -53,7 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
       picture: uploadedResponse,
       address,
     });
-  
+
     if (user) {
       res.status(201).json({
         _id: user._id,
@@ -64,57 +63,93 @@ const registerUser = asyncHandler(async (req, res) => {
         address: user.address,
         token: generateToken(user._id),
       });
-    }} else {
-      res.status(400).json({ error: "Invalid user data" });
     }
-  });
+  } else {
+    res.status(400).json({ error: "Invalid user data" });
+  }
+});
 
- // @desc     Update User Profile
+// @desc     Update User Profile
 // @route    PUT /api/users/updateProfile
 // @access   Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-  
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
-      if (req.body.address) {
-        user.address = {
-          street: req.body.address.street || user.address.street,
-          city: req.body.address.city || user.address.city,
-          postalCode: req.body.address.postalCode || user.address.postalCode,
-          country: req.body.address.country || user.address.country,
-        };
-      }
-  
-      const updatedUser = await user.save();
-  
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        isAdmin: updatedUser.isAdmin,
-        address: updatedUser.address,
-        token: generateToken(updatedUser._id),
-      });
-    } else {
-      res.status(404).json({ error: "User not found" });
-    }
-  });
+  const user = await User.findById(req.user._id);
 
-// @desc     Get all users
-// @route    GET /api/users
-// @access   Private
-const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({}).select('-password');
-  res.json(users);
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+    if (req.body.address) {
+      user.address = {
+        street: req.body.address.street || user.address.street,
+        city: req.body.address.city || user.address.city,
+        postalCode: req.body.address.postalCode || user.address.postalCode,
+        country: req.body.address.country || user.address.country,
+      };
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+      address: updatedUser.address,
+      token: generateToken(updatedUser._id),
+    });
+  } else {
+    res.status(404).json({ error: "User not found" });
+  }
 });
 
 
 
+// @desc     Get all users
+// @route    GET /api/users
+// @access   Private
+const getUsers = asyncHandler(async (req, res, next) => {
+  const pageSize = 8;
+  let page = Number(req.query.page) || 1;
+  const searchKeyword = req.query.search || "";
 
+  try {
+    const query = searchKeyword
+      ? {
+          name: { $regex: new RegExp(searchKeyword, "i") },
+        }
+      : {};
+
+    const count = await User.countDocuments(query);
+
+    // If page is not selected, set page to 1
+    if (!req.query.page && !req.query.search) {
+      const Users = await User.find().sort({
+        _id: -1,
+      });
+
+      res.json({
+        data: Users,
+        page: 1,
+        pages: 1,
+      });
+    } else {
+      const Users = await User.find(query)
+        .sort({ _id: -1 })
+        .skip(pageSize * (page - 1))
+        .limit(pageSize);
+
+      res.json({
+        data: Users,
+        page,
+        pages: Math.ceil(count / pageSize),
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 export { authUser, registerUser, updateUserProfile, getUsers };

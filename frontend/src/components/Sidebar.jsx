@@ -163,7 +163,7 @@ function Sidebar({
           }}
         >
           <Box width="100%">
-            <Box m="1.5rem 2rem 2rem 3rem">
+            <Box m="1.5rem 2rem 2rem 2rem">
               <FlexBetween>
                 <Box display="flex" alignItems="center" gap="0.5rem">
                 {/* <Box

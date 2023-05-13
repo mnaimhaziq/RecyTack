@@ -18,28 +18,29 @@ import {
   IconButton,
   useTheme,
   Pagination,
-  PaginationItem,
   useMediaQuery,
+  MenuItem,
+  FormControl,
+  Select,
+  InputLabel,
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import Header from "../components/Header";
 import {
   getAllRecycleLocationByPageAndKeyword,
-  deleteRecycleCollection,
   getRecycleLocationById,
   updateRecycleLocationById,
-} from "../features/recycle/recycleSlice";
-import { Formik, Form, Field } from "formik";
+  createRecycleLocation,
+  deleteRecycleLocation,
+} from "../features/recycle/recycleFunction/recycleLocationFunction";
+import { Formik } from "formik";
 import * as Yup from "yup";
-import {
-  createRecycleCollection,
-  reset,
-} from "../features/recycle/recycleSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const RecyclingLocation = () => {
   const [open, setOpen] = useState(false);
+  const [malaysiaStates, setMalaysiaStates] = useState([  "Johor",  "Kedah",  "Kelantan",  "Melaka",  "Negeri Sembilan",  "Pahang",  "Perak",  "Perlis",  "Pulau Pinang",  "Sabah",  "Sarawak",  "Selangor",  "Terengganu",  "Kuala Lumpur",  "Labuan",  "Putrajaya",]);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -90,7 +91,7 @@ const RecyclingLocation = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this location?")) {
-      await dispatch(deleteRecycleCollection({ id, token: user.token })).then(() => {
+      await dispatch(deleteRecycleLocation({ id, token: user.token })).then(() => {
         dispatch(
           getAllRecycleLocationByPageAndKeyword({
             token: user.token,
@@ -108,6 +109,7 @@ const RecyclingLocation = () => {
     street: "",
     city: "",
     postalCode: "",
+    state: "",
     country: "",
     contactNumber: "",
     latitude: "",
@@ -119,6 +121,7 @@ const RecyclingLocation = () => {
     street: Yup.string().required("This field is Required"),
     city: Yup.string().required("This field is Required"),
     postalCode: Yup.string().required("This field is Required"),
+    state: Yup.string().required("This field is Required"),
     country: Yup.string().required("This field is Required"),
     contactNumber: Yup.string().required("This field is Required"),
     latitude: Yup.number()
@@ -138,6 +141,7 @@ const RecyclingLocation = () => {
       street,
       city,
       postalCode,
+      state,
       country,
     } = values;
 
@@ -150,12 +154,13 @@ const RecyclingLocation = () => {
         street: street,
         city: city,
         postalCode: postalCode,
+        state: state,
         country: country,
       },
     };
 
     await dispatch(
-      createRecycleCollection({ newFormData, token: user.token })
+      createRecycleLocation({ newFormData, token: user.token })
     ).then(() => {
       dispatch(
         getAllRecycleLocationByPageAndKeyword({
@@ -180,6 +185,7 @@ const RecyclingLocation = () => {
       street,
       city,
       postalCode,
+      state,
       country,
     } = values;
 
@@ -192,6 +198,7 @@ const RecyclingLocation = () => {
         street: street,
         city: city,
         postalCode: postalCode,
+        state: state,
         country: country,
       },
     };
@@ -333,21 +340,38 @@ const RecyclingLocation = () => {
                       ) : null
                     }
                   />
-                  <TextField
-                    label="Country"
-                    id="country"
-                    fullWidth
-                    sx={{ my: 2 }}
-                    name="country"
-                    value={values.country}
-                    onChange={handleChange}
-                    error={errors.country && touched.country}
-                    helperText={
-                      touched.country && errors.country ? (
-                        <span style={{ color: "red" }}>{errors.country}</span>
-                      ) : null
-                    }
-                  />
+                  <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                    <Select
+                      labelId="State"
+                      label="State"
+                      id="state"
+                      name="state"
+                      value={values.state}
+                      onChange={handleChange}
+                    >
+                      { malaysiaStates.map((state) => (
+                          <MenuItem key={state} value={state}>
+                            {state}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    <InputLabel htmlFor="state">State</InputLabel>
+                  </FormControl>
+
+                  <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                    <Select
+                      labelId="Country"
+                      label="Country"
+                      id="country"
+                      name="country"
+                      value={values.country}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="Malaysia">Malaysia</MenuItem>
+                    </Select>
+                    <InputLabel htmlFor="country">Country</InputLabel>
+                  </FormControl>
+
                   <TextField
                     label="Contact Number"
                     id="contactNumber"
@@ -453,7 +477,7 @@ const RecyclingLocation = () => {
                 recycleLocations.data.map((row) => (
                   <TableRow key={row._id}>
                     <TableCell>{row.locationName}</TableCell>
-                    <TableCell>{`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.country}`}</TableCell>
+                    <TableCell>{`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}</TableCell>
                     <TableCell>{row.contactNumber}</TableCell>
                     <TableCell>{row.latitude}</TableCell>
                     <TableCell>{row.longitude}</TableCell>
@@ -480,7 +504,7 @@ const RecyclingLocation = () => {
           <Pagination
             sx={{
               m: "1rem 0",
-              "& .Mui-selected": { backgroundColor: "rgba(13,110,253,0.4)" },
+              "& .Mui-selected": { backgroundColor: "rgba(13,110,253,0.5)" },
             }}
             count={totalPages}
             page={page}
@@ -506,6 +530,9 @@ const RecyclingLocation = () => {
               city: recycleLocation.address ? recycleLocation.address.city : "",
               postalCode: recycleLocation.address
                 ? recycleLocation.address.postalCode
+                : "",
+                state: recycleLocation.address
+                ? recycleLocation.address.state
                 : "",
               country: recycleLocation.address
                 ? recycleLocation.address.country
@@ -582,21 +609,37 @@ const RecyclingLocation = () => {
                     ) : null
                   }
                 />
-                <TextField
-                  label="Country"
-                  id="country"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="country"
-                  value={values.country}
-                  onChange={handleChange}
-                  error={errors.country && touched.country}
-                  helperText={
-                    touched.country && errors.country ? (
-                      <span style={{ color: "red" }}>{errors.country}</span>
-                    ) : null
-                  }
-                />
+                  <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                    <Select
+                      labelId="State"
+                      label="State"
+                      id="state"
+                      name="state"
+                      value={values.state}
+                      onChange={handleChange}
+                    >
+                      { malaysiaStates.map((state) => (
+                          <MenuItem key={state} value={state}>
+                            {state}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    <InputLabel htmlFor="state">State</InputLabel>
+                  </FormControl>
+
+                  <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                    <Select
+                      labelId="Country"
+                      label="Country"
+                      id="country"
+                      name="country"
+                      value={values.country}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="Malaysia">Malaysia</MenuItem>
+                    </Select>
+                    <InputLabel htmlFor="country">Country</InputLabel>
+                  </FormControl>
                 <TextField
                   label="Contact Number"
                   id="contactNumber"

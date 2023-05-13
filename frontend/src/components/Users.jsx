@@ -1,39 +1,45 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
-import { useTheme } from "@mui/material";
+import { Paper, useTheme, Typography, Avatar, Box } from "@mui/material";
 
 function Users({ user }) {
-  console.log(user);
   const theme = useTheme();
   return (
-    <Card
-      className="my-3 p-3 rounded"
-      style={{
-        backgroundColor: theme.palette.background.alt,
-        borderRadius: "10px",
+    <Paper
+      elevation={6}
+      sx={{
+        p: 2,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        m: 2,
+        backgroundColor: theme.palette.background.alt
       }}
     >
-      <Link to={``}>
-       {user.picture &&  <Card.Img src={user.picture.url} variant="top"  style={{ width: "80px"}} />}
-       {/* { user.picture && <img src={user.picture.url} width="80px"/>} */}
-      </Link>
-
-      <Card.Body>
-        <Link to={`/product/${user._id}`} style={{ textDecoration: "none" }}>
-          <Card.Title as="div">
-            <strong>{user.name}</strong>
-          </Card.Title>
+      {user.picture && (
+        <Avatar
+          alt={user.name}
+          src={user.picture.url}
+          sx={{ width: 80, height: 80 }}
+        />
+      )}
+      <Box sx={{ textAlign: "center", mt: 2 }}>
+        <Typography variant="h6">{user.name}</Typography>
+        <Typography
+          variant="body1"
+          sx={{ color: theme.palette.text.secondary }}
+        >
+          {user.email}
+        </Typography>
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          {user.isAdmin ? "Admin" : "User"}
+        </Typography>
+        <Link to={`/users/${user.id}`}>
+          <Card.Link sx={{ mt: 2 }}>View Profile</Card.Link>
         </Link>
-
-        <Card.Text as="div">{user.email}</Card.Text>
-        {user.isAdmin ? (
-          <Card.Text>Admin</Card.Text>
-        ) : (
-          <Card.Text>User</Card.Text>
-        )}
-      </Card.Body>
-    </Card>
+      </Box>
+    </Paper>
   );
 }
 

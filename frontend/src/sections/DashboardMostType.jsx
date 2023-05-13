@@ -64,9 +64,7 @@ export const DashboardMostType = (props) => {
 };
 
 DashboardMostType.propTypes = {
-  difference: PropTypes.number,
-  positive: PropTypes.bool,
-  value: PropTypes.string.isRequired,
+ type: PropTypes.string,
   sx: PropTypes.object
 };
 

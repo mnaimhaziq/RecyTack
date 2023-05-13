@@ -42,7 +42,7 @@ const updateProfile = async (userUpdateData) => {
 };
 
 // Get all users
-const getAllUsers = async (token) => {
+const getAllUsers = async (token, page, search) => {
   
 
   const config = {
@@ -50,7 +50,7 @@ const getAllUsers = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(`/api/users` ,config);
+  const response = await axios.get(API_URL + `getAllUsers?page=${page}&search=${search}` ,config);
   return response.data;
 }
 
