@@ -1,12 +1,26 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import FooterItem from "./FooterItem";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const FooterList = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+
   return (
     <View style={styles.container}>
-      <FooterItem text="Home" name="home" />
-      <FooterItem text="RecyclingHistory" name="history" />
+      <FooterItem
+        text="Home"
+        name="home"
+        handlePress={() => navigation.navigate("Home")}
+        routeName={route.name}
+      />
+      <FooterItem
+        text="RecyclingHistory"
+        name="history"
+        handlePress={() => navigation.navigate("Recycling")}
+        routeName={route.name}
+      />
       <FooterItem text="Education" name="library-books" />
       <FooterItem text="Leaderboard" name="leaderboard" />
       <FooterItem text="Account" name="account-circle" />

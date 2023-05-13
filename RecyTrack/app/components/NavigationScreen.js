@@ -1,10 +1,12 @@
 import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { AuthContext } from "../context/auth";
+import HeaderTabs from "./header/HeaderTabs";
+
 import Login from "../screens/Login";
 import Register from "../screens/Register";
 import Home from "../screens/Home";
-import { AuthContext } from "../context/auth";
-import HeaderTabs from "./header/HeaderTabs";
+import Recycling from "../screens/Recycling";
 
 const Stack = createNativeStackNavigator();
 
@@ -15,11 +17,14 @@ const NavigationScreen = () => {
   return (
     <Stack.Navigator initialRouteName="Home">
       {auth ? (
-        <Stack.Screen
-          name="Home"
-          component={Home}
-          options={{ headerRight: () => <HeaderTabs /> }}
-        />
+        <>
+          <Stack.Screen
+            name="Home"
+            component={Home}
+            options={{ headerRight: () => <HeaderTabs /> }}
+          />
+          <Stack.Screen name="Recycling" component={Recycling} />
+        </>
       ) : (
         <>
           <Stack.Screen name="Login" component={Login} />
