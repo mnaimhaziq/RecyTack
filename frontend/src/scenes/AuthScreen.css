@@ -3,8 +3,10 @@
 .auth-body {
     /* background: rgba(175,222,246, 1);
   background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%); */
-  background: rgb(255,252,9);
-background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 100%);
+  /* background: rgb(255,252,9);
+background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 100%); */
+background: rgb(230,240,255);
+background: linear-gradient(90deg, rgba(230,240,255,0.7) 0%, rgba(103,162,249,0.7) 100%);
     height: 100vh;
     width: 100%;
     display: flex;
@@ -39,8 +41,10 @@ background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 10
 .register-body {
     /* background: rgba(175,222,246, 1);
     background: linear-gradient(90deg, rgba(175,222,246,1) 0%, rgba(247,175,255,1) 100%); */
-    background: rgb(255,252,9);
-    background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 100%);
+    /* background: rgb(255,252,9);
+    background: linear-gradient(90deg, rgba(255,252,9,0.7) 0%, rgba(59,232,0,0.7) 100%); */
+    background: rgb(230,240,255);
+background: linear-gradient(90deg, rgba(230,240,255,0.7) 0%, rgba(103,162,249,0.7) 100%);
     height: 100vh;
     width: 100%;
     display: flex;

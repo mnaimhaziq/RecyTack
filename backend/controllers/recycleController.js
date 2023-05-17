@@ -298,8 +298,7 @@ const getTotalRecyclingHistoryByUserId = asyncHandler(async (req, res) => {
   const recyclingHistoryCount = recyclingHistory.length;
 
   if (recyclingHistoryCount === 0) {
-    res.status(404);
-    throw new Error("Recycling History not found");
+    res.status(200).json("Recycling History not found");
   }
 
   res.status(200).json({
@@ -315,9 +314,9 @@ const getMostRecycledWasteType = asyncHandler(async (req, res) => {
   const userId = req.params.id;
   const recyclingHistory = await RecyclingHistory.find({ user: userId });
 
-  if (!recyclingHistory) {
-    res.status(404);
-    throw new Error("Recycling History not found");
+  if (!recyclingHistory || recyclingHistory.length === 0) {
+    // Return an empty response or an appropriate message
+    return res.status(200).json({ mostRecycledWasteType: "None" });
   }
 
   const wasteTypeMap = {};

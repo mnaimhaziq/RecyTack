@@ -34,5 +34,5 @@ router.get("/getRecyclingHistoryByPage/:id", protect, getRecyclingHistoryByUserI
 router.route("/getRecyclingHistoryById/:id").get(protect, getRecyclingHistoryById);                   // Get Recycling History By ID
 router.route("/getTotalRecyclingHistoryByUserId/:id").get(protect, getTotalRecyclingHistoryByUserId); // Get Total Recycling History By User ID
 router.route("/getMostRecycledWasteType/:id").get(protect, getMostRecycledWasteType);                 // Get Most Recycled Waste Type
-router.route("/percentages/:id").get(protect, getRecyclingPercentagesByUser); 
+router.route("/percentages/:id").get(protect, getRecyclingPercentagesByUser);                         // Get Recycling Percentages By User
 export default router;

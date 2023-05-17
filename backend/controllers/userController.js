@@ -21,6 +21,7 @@ const authUser = asyncHandler(async (req, res) => {
       phoneNumber: user.phoneNumber,
       address: user.address,
       token: generateToken(user._id),
+      darkMode: user.darkMode
     });
   } else {
     res.status(401).json({ error: "Invalid email or password" });
@@ -62,6 +63,7 @@ const registerUser = asyncHandler(async (req, res) => {
         picture: uploadedResponse,
         address: user.address,
         token: generateToken(user._id),
+        darkMode: user.darkMode
       });
     }
   } else {
@@ -152,4 +154,24 @@ const getUsers = asyncHandler(async (req, res, next) => {
   }
 });
 
-export { authUser, registerUser, updateUserProfile, getUsers };
+const updateDarkMode = async (req, res) => {
+  const { userId, darkMode } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.darkMode = darkMode;
+    await user.save();
+
+    
+  } catch (error) {
+    console.error('Error updating dark mode:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export { authUser, registerUser, updateUserProfile, getUsers, updateDarkMode };

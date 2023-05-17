@@ -59,12 +59,36 @@ const logout = () => {
     localStorage.removeItem('userInfo')
 }
 
+// Update dark mode
+const updateDarkMode = async (userId, darkMode, token) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const data = {
+    userId,
+    darkMode,
+  };
+
+  const response = await axios.patch(API_URL + `users/${userId}/dark-mode`, data, config);
+
+  if (response.data) {
+    localStorage.setItem('userInfo', JSON.stringify(response.data.user));
+  }
+  return response.data;
+};
+
+
 const authService = {
   register,
   login,
   updateProfile,
   getAllUsers,
   logout,
+  updateDarkMode,
 };
 
 export default authService;

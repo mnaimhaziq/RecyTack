@@ -56,8 +56,8 @@ const UserNavItems = [
     icon: <Leaderboard />,
   },
   {
-    url: "feedback",
-    text: "Feedback",
+    url: "feedbacks",
+    text: "Feedbacks",
     icon: <Feedback />,
   },
   {
@@ -66,8 +66,8 @@ const UserNavItems = [
     icon: null,
   },
   {
-    url: "manageprofile",
-    text: "Manage Profile",
+    url: "userprofile",
+    text: "User Profile",
     icon: <AccountCircle />,
   },
 ];
