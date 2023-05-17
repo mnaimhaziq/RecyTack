@@ -10,6 +10,7 @@ import { Newspaper } from '@mui/icons-material';
 export const DashboardMostType = (props) => {
   const { type ,sx } = props;
   
+
  
   return (
     <Card sx={sx}>
@@ -28,7 +29,7 @@ export const DashboardMostType = (props) => {
               Most Type you recycle
             </Typography>
             <Typography variant="h2" sx={{fontWeight: 'bold', textTransform: 'uppercase'}} >
-              {type}
+              {type ? type : "None"}
             </Typography>
           </Stack>
           <Avatar

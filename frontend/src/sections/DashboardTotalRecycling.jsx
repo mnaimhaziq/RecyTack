@@ -24,7 +24,7 @@ export const DashboardTotalRecycling = (props) => {
               Total Recycling
             </Typography>
             <Typography variant="h2" sx={{fontWeight: 'bold'}}>
-              {value}
+              {value ? value : 0}
             </Typography>
           </Stack>
           <Avatar

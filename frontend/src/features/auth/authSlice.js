@@ -76,6 +76,27 @@ export const logout = createAsyncThunk("auth/logout", async () => {
   await authService.logout();
 });
 
+
+// Update Dark Mode
+export const updateDarkMode = createAsyncThunk(
+  "auth/updateDarkMode",
+  async ({ userId, darkMode, token }, thunkAPI) => {
+    try {
+      const updatedUser = await authService.updateDarkMode(userId, darkMode, token);
+      thunkAPI.dispatch(setMode()); // Update the local state with the new dark mode value
+      return updatedUser;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -85,6 +106,9 @@ export const authSlice = createSlice({
       state.isError = false;
       state.isSuccess = false;
       state.message = "";
+    },
+    setMode: (state) => {
+      state.user.darkMode = state.user.darkMode === "light" ? "dark" : "light";
     },
   },
   extraReducers: (builder) => {
@@ -152,9 +176,21 @@ export const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.AllUsers = []
+      }).addCase(updateDarkMode.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateDarkMode.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.user = action.payload;
+      })
+      .addCase(updateDarkMode.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });
 
-export const { resetUser} = authSlice.actions;
+export const { resetUser, setMode} = authSlice.actions;
 export default authSlice.reducer;

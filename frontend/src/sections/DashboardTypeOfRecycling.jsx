@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Typography,
   useTheme,
 } from "@mui/material";
 import MyChart from "../components/chart";
@@ -58,11 +59,23 @@ export const DashboardTypeOfRecycling = (props) => {
   const { chartSeries, labels, sx } = props;
   const chartOptions = useChartOptions(labels);
 
+  if (!chartSeries || chartSeries.length === 0 || !labels || labels.length === 0) {
+    return (
+      <Card sx={sx}>
+        <CardHeader title="Recycling Material" />
+        <CardContent sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "45vh" }}>
+          <h3>No data available for the chart.</h3>
+        </CardContent>
+      </Card>
+    );
+  }
+
+
   return (
     <Card sx={sx}>
       <CardHeader title="Recycling Material" />
 
-      <CardContent  sx={{ display: "flex", justifyContent: "center" ,alignItems: "center" ,height: "100%", padding: '0', margin: '0'}} >
+      <CardContent  sx={{ display: "flex", justifyContent: "center" ,alignItems: "center" ,height: "45vh", padding: '0', margin: '0'}} >
         <MyChart 
           chartOptions={chartOptions}
           chartSeries={chartSeries}

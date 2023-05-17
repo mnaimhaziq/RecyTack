@@ -35,8 +35,7 @@ function Users({ user }) {
         <Typography variant="body1" sx={{ mt: 2 }}>
           {user.isAdmin ? "Admin" : "User"}
         </Typography>
-        <Link to={`/users/${user.id}`}>
-          <Card.Link sx={{ mt: 2 }}>View Profile</Card.Link>
+        <Link to={`/users/${user.id}`}>View Profile
         </Link>
       </Box>
     </Paper>

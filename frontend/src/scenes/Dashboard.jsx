@@ -119,7 +119,7 @@ function Dashboard() {
                 chartSeries={chartSeries}
                 labels={labels}
                 sx={{
-                  height: '100%',
+                  height: '50vh',
                   backgroundColor: theme.palette.background.alt,
                   
                 }}
@@ -132,7 +132,7 @@ function Dashboard() {
                 <DashboardLatestHistory
                   recyclingHistoriesTop8={recyclingHistoriesTop8}
                   sx={{
-                    height: "100%",
+                    height: "50vh",
                     backgroundColor: theme.palette.background.alt,
                   }}
                 />

@@ -37,14 +37,16 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const RecyclingLocation = () => {
   const [open, setOpen] = useState(false);
-  const [malaysiaStates, setMalaysiaStates] = useState([  "Johor",  "Kedah",  "Kelantan",  "Melaka",  "Negeri Sembilan",  "Pahang",  "Perak",  "Perlis",  "Pulau Pinang",  "Sabah",  "Sarawak",  "Selangor",  "Terengganu",  "Kuala Lumpur",  "Labuan",  "Putrajaya",]);
+  const [malaysiaStates, setMalaysiaStates] = useState([ "Johor", "Kedah", "Kelantan", "Kuala Lumpur", "Labuan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Putrajaya", "Sabah", "Sarawak", "Selangor", "Terengganu"]);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
+  const navigate = useNavigate();
 
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
@@ -60,6 +62,9 @@ const RecyclingLocation = () => {
   const theme = useTheme();
 
   useEffect(() => {
+    if(!user.isAdmin){
+      navigate("/dashboard")
+    }
     dispatch(
       getAllRecycleLocationByPageAndKeyword({ token: user.token, page, search })
     );
