@@ -46,8 +46,8 @@ const RecyclingHistory = () => {
   const [totalPages, setTotalPages] = useState(1);
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
-  const recycleLocations = useSelector(
-    (state) => state.recycle.recycleLocations
+  const allRecycleLocations = useSelector(
+    (state) => state.recycle.allRecycleLocations
   );
 
   const recyclingHistories = useSelector(
@@ -269,7 +269,7 @@ const RecyclingHistory = () => {
                       value={values.recyclingLocationId}
                       onChange={handleChange}
                     >
-                      {recycleLocations.data
+                      {allRecycleLocations.data
                         .slice()
                         .sort((a, b) =>
                           a.locationName.localeCompare(b.locationName)
@@ -485,7 +485,7 @@ const RecyclingHistory = () => {
                     value={values.recyclingLocationId}
                     onChange={handleChange}
                   >
-                    {recycleLocations.data
+                    {allRecycleLocations.data
                       .slice()
                       .sort((a, b) =>
                         a.locationName.localeCompare(b.locationName)

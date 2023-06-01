@@ -24,7 +24,7 @@ const getAllRecycleLocation = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + `location` ,config);
+  const response = await axios.get(API_URL + `location/all` ,config);
   return response.data;
 }
 
