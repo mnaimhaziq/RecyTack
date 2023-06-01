@@ -25,6 +25,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
+
 import Header from "../components/Header";
 import {
   getAllRecycleLocationByPageAndKeyword,
@@ -32,27 +33,55 @@ import {
   updateRecycleLocationById,
   createRecycleLocation,
   deleteRecycleLocation,
+  getAllRecycleLocation,
 } from "../features/recycle/recycleFunction/recycleLocationFunction";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-
+import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer, useMap, Marker, Popup } from "react-leaflet";
+import { Icon } from "leaflet";
+import mapPointerIcon from "../assets/mapPointerIcon.png"
+import MarkerClusterGroup from 'react-leaflet-cluster'
 const RecyclingLocation = () => {
   const [open, setOpen] = useState(false);
-  const [malaysiaStates, setMalaysiaStates] = useState([ "Johor", "Kedah", "Kelantan", "Kuala Lumpur", "Labuan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Putrajaya", "Sabah", "Sarawak", "Selangor", "Terengganu"]);
+  const [malaysiaStates, setMalaysiaStates] = useState([
+    "Johor",
+    "Kedah",
+    "Kelantan",
+    "Kuala Lumpur",
+    "Labuan",
+    "Melaka",
+    "Negeri Sembilan",
+    "Pahang",
+    "Perak",
+    "Perlis",
+    "Pulau Pinang",
+    "Putrajaya",
+    "Sabah",
+    "Sarawak",
+    "Selangor",
+    "Terengganu",
+  ]);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
+ // Define mapLink here
+  const mapLink = (latitude, longitude) => `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
   const recycleLocations = useSelector(
     (state) => state.recycle.recycleLocations
   );
+  const allRecycleLocations = useSelector(
+    (state) => state.recycle.allRecycleLocations.data
+  );
+
   const recycleLocation = useSelector(
     (state) => state.recycle.recycleLocationById
   );
@@ -60,11 +89,12 @@ const RecyclingLocation = () => {
   const dispatch = useDispatch();
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const theme = useTheme();
-
+  const customIcon = new Icon({
+    iconUrl: mapPointerIcon,
+    iconSize: [38, 38],
+  });
   useEffect(() => {
-    if(!user.isAdmin){
-      navigate("/dashboard")
-    }
+    dispatch(getAllRecycleLocation(user.token));
     dispatch(
       getAllRecycleLocationByPageAndKeyword({ token: user.token, page, search })
     );
@@ -96,15 +126,17 @@ const RecyclingLocation = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this location?")) {
-      await dispatch(deleteRecycleLocation({ id, token: user.token })).then(() => {
-        dispatch(
-          getAllRecycleLocationByPageAndKeyword({
-            token: user.token,
-            page,
-            search,
-          })
-        );
-      });
+      await dispatch(deleteRecycleLocation({ id, token: user.token })).then(
+        () => {
+          dispatch(
+            getAllRecycleLocationByPageAndKeyword({
+              token: user.token,
+              page,
+              search,
+            })
+          );
+        }
+      ).then(() => {  dispatch(getAllRecycleLocation(user.token));});
       toast.error("Recycling Location Has Been Deleted ");
     }
   };
@@ -174,7 +206,7 @@ const RecyclingLocation = () => {
           search,
         })
       );
-    });
+    }).then(() => {  dispatch(getAllRecycleLocation(user.token));});
     toast.success("New Recycling Location Created ");
     resetForm();
     setOpen(false);
@@ -219,7 +251,7 @@ const RecyclingLocation = () => {
             search,
           })
         );
-      });
+      }).then(() => {  dispatch(getAllRecycleLocation(user.token));});
       toast.success("Recycling Location Has Been Edited ");
       resetForm();
       setOpenEditDialog(false);
@@ -229,54 +261,364 @@ const RecyclingLocation = () => {
   };
 
   return (
-    <Box m="1.5rem 2.5rem " p="0 0 4rem 0">
-      <ToastContainer theme="colored" />
-      <Box
-        display={isNonMobile ? "flex" : "block"}
-        sx={{
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: "3rem",
-        }}
+    <>
+      <Box m="1.5rem 2.5rem " p="0 0 4rem 0">
+        <ToastContainer theme="colored" />
+        {allRecycleLocations && <Box
+        sx={{ display: "flex", justifyContent: "center",  alignItems: "center", marginBottom: "10vh" ,flexDirection:"column"}}
       >
-        <Header title="RECYCLING LOCATION" />
-
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <TextField
-            id="search"
-            label="Search By Location Name"
-            variant="outlined"
-            size="small"
-            value={search}
-            onChange={handleSearchChange}
+        <h3>Explore Recycling Locations on the Map</h3>
+        <MapContainer center={[3.144190, 101.695337]} zoom={13}>
+          /*{" "}
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleClickOpen}
-            sx={{
-              ml: "1rem",
-              padding: "0.5rem 1rem",
-              color: "#000000",
-              backgroundColor: theme.palette.primary.light,
-              "&:hover": {
-                color: theme.palette.neutral[1000],
-              },
-            }}
+          <MarkerClusterGroup
+          chunkedLoading
           >
-            <Add /> Create New Recycling Location
-          </Button>
-        </Box>
-      </Box>
-      <div>
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Add New Recycling Collection Location</DialogTitle>
+          {allRecycleLocations.map((recycleLocation) => (
+            
+            <Marker
+              position={[recycleLocation.latitude, recycleLocation.longitude]} icon={customIcon}
+            >
+              <Popup>
+                {recycleLocation.locationName} <br/>
+                <a href={mapLink(recycleLocation.latitude, recycleLocation.longitude)} target="_blank">Open in Google Maps</a>
+              </Popup>
+            </Marker>
+          ))}
+          </MarkerClusterGroup>
+        </MapContainer>
+      </Box>}
+        <Box
+          display={isNonMobile ? "flex" : "block"}
+          sx={{
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: "3rem",
+          }}
+        >
+          <Header title="RECYCLING LOCATION" />
 
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <TextField
+              id="search"
+              label="Search By Location Name"
+              variant="outlined"
+              size="small"
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleClickOpen}
+              sx={{
+                ml: "1rem",
+                padding: "0.5rem 1rem",
+                color: "#000000",
+                backgroundColor: theme.palette.primary.light,
+                "&:hover": {
+                  color: theme.palette.neutral[1000],
+                },
+              }}
+            >
+              <Add /> Create New Recycling Location
+            </Button>
+          </Box>
+        </Box>
+        <div>
+          <Dialog open={open} onClose={handleClose}>
+            <DialogTitle>Add New Recycling Collection Location</DialogTitle>
+
+            <DialogContent>
+              <Formik
+                initialValues={initialValues}
+                validationSchema={validationSchema}
+                onSubmit={onSubmit}
+              >
+                {({ values, handleChange, handleSubmit, errors, touched }) => (
+                  <form onSubmit={handleSubmit}>
+                    <TextField
+                      label="Location Name"
+                      id="locationName"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="locationName"
+                      value={values.locationName}
+                      onChange={handleChange}
+                      error={errors.locationName && touched.locationName}
+                      helperText={
+                        touched.locationName && errors.locationName ? (
+                          <span style={{ color: "red" }}>
+                            {errors.locationName}
+                          </span>
+                        ) : null
+                      }
+                    />
+
+                    <TextField
+                      label="Street Address"
+                      id="street"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="street"
+                      value={values.street}
+                      onChange={handleChange}
+                      error={errors.street && touched.street}
+                      helperText={
+                        touched.street && errors.street ? (
+                          <span style={{ color: "red" }}>{errors.street}</span>
+                        ) : null
+                      }
+                    />
+                    <TextField
+                      label="City"
+                      id="city"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="city"
+                      value={values.city}
+                      onChange={handleChange}
+                      error={errors.city && touched.city}
+                      helperText={
+                        touched.city && errors.city ? (
+                          <span style={{ color: "red" }}>{errors.city}</span>
+                        ) : null
+                      }
+                    />
+                    <TextField
+                      label="Postal Code"
+                      id="postalCode"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="postalCode"
+                      value={values.postalCode}
+                      onChange={handleChange}
+                      error={errors.postalCode && touched.postalCode}
+                      helperText={
+                        touched.postalCode && errors.postalCode ? (
+                          <span style={{ color: "red" }}>
+                            {errors.postalCode}
+                          </span>
+                        ) : null
+                      }
+                    />
+                    <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                      <Select
+                        labelId="State"
+                        label="State"
+                        id="state"
+                        name="state"
+                        value={values.state}
+                        onChange={handleChange}
+                      >
+                        {malaysiaStates.map((state) => (
+                          <MenuItem key={state} value={state}>
+                            {state}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <InputLabel htmlFor="state">State</InputLabel>
+                    </FormControl>
+
+                    <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                      <Select
+                        labelId="Country"
+                        label="Country"
+                        id="country"
+                        name="country"
+                        value={values.country}
+                        onChange={handleChange}
+                      >
+                        <MenuItem value="Malaysia">Malaysia</MenuItem>
+                      </Select>
+                      <InputLabel htmlFor="country">Country</InputLabel>
+                    </FormControl>
+
+                    <TextField
+                      label="Contact Number"
+                      id="contactNumber"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="contactNumber"
+                      value={values.contactNumber}
+                      onChange={handleChange}
+                      error={errors.contactNumber && touched.contactNumber}
+                      helperText={
+                        touched.contactNumber && errors.contactNumber ? (
+                          <span style={{ color: "red" }}>
+                            {errors.contactNumber}
+                          </span>
+                        ) : null
+                      }
+                    />
+                    <TextField
+                      label="Latitude"
+                      id="Latitude"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="latitude"
+                      value={values.latitude}
+                      onChange={handleChange}
+                      error={errors.latitude && touched.latitude}
+                      helperText={
+                        touched.latitude && errors.latitude ? (
+                          <span style={{ color: "red" }}>
+                            {errors.latitude}
+                          </span>
+                        ) : null
+                      }
+                    />
+
+                    <TextField
+                      label="Longitude"
+                      id="longitude"
+                      fullWidth
+                      sx={{ my: 2 }}
+                      name="longitude"
+                      value={values.longitude}
+                      onChange={handleChange}
+                      error={errors.longitude && touched.longitude}
+                      helperText={
+                        touched.longitude && errors.longitude ? (
+                          <span style={{ color: "red" }}>
+                            {errors.longitude}
+                          </span>
+                        ) : null
+                      }
+                    />
+                    <DialogActions>
+                      <Button
+                        onClick={handleClose}
+                        sx={{
+                          padding: "0.5rem 1rem",
+                          color: theme.palette.neutral[1000],
+                          backgroundColor: theme.palette.primary.light,
+                          "&:hover": {
+                            backgroundColor: theme.palette.primary.main,
+                          },
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        sx={{
+                          padding: "0.5rem 1rem",
+                          color: theme.palette.neutral[1000],
+                          backgroundColor: theme.palette.primary.light,
+                          "&:hover": {
+                            backgroundColor: theme.palette.primary.main,
+                          },
+                        }}
+                      >
+                        Create
+                      </Button>
+                    </DialogActions>
+                  </form>
+                )}
+              </Formik>
+            </DialogContent>
+          </Dialog>
+        </div>
+      
+        <Paper>
+          <TableContainer>
+            <Table>
+              <TableHead
+                style={{ backgroundColor: theme.palette.primary.main }}
+              >
+                <TableRow>
+                  <TableCell style={{ color: "#ffffff" }}>
+                    LOCATION NAME
+                  </TableCell>
+                  <TableCell style={{ color: "#ffffff" }}>ADDRESS</TableCell>
+                  <TableCell style={{ color: "#ffffff" }}>
+                    CONTACT NUMBER
+                  </TableCell>
+                  {/* <TableCell>Waste Types</TableCell> */}
+                  <TableCell style={{ color: "#ffffff" }}>LATITUDE</TableCell>
+                  <TableCell style={{ color: "#ffffff" }}>LONGITUDE</TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {recycleLocations.data &&
+                  recycleLocations.data.map((row) => (
+                    <TableRow key={row._id}>
+                      <TableCell>{row.locationName}</TableCell>
+                      <TableCell>{`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}</TableCell>
+                      <TableCell>{row.contactNumber}</TableCell>
+                      <TableCell>{row.latitude}</TableCell>
+                      <TableCell>{row.longitude}</TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          aria-label="edit"
+                          onClick={() => handleEdit(row._id)}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          aria-label="delete"
+                          onClick={() => handleDelete(row._id)}
+                        >
+                          <Delete sx={{ color: "#e00a33" }} />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Pagination
+              sx={{
+                m: "1rem 0",
+                "& .Mui-selected": { backgroundColor: "rgba(13,110,253,0.5)" },
+              }}
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              siblingCount={1}
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        </Paper>
+        <Dialog open={openEditDialog} onClose={handleClose}>
+          <DialogTitle>
+            Edit Recycling Collection Location for{" "}
+            {recycleLocation.locationName}
+          </DialogTitle>
           <DialogContent>
             <Formik
-              initialValues={initialValues}
+              initialValues={{
+                id: recycleLocation._id,
+                locationName: recycleLocation.locationName,
+                street: recycleLocation.address
+                  ? recycleLocation.address.street
+                  : "",
+                city: recycleLocation.address
+                  ? recycleLocation.address.city
+                  : "",
+                postalCode: recycleLocation.address
+                  ? recycleLocation.address.postalCode
+                  : "",
+                state: recycleLocation.address
+                  ? recycleLocation.address.state
+                  : "",
+                country: recycleLocation.address
+                  ? recycleLocation.address.country
+                  : "",
+                contactNumber: recycleLocation.contactNumber,
+                latitude: recycleLocation.latitude,
+                longitude: recycleLocation.longitude,
+              }}
               validationSchema={validationSchema}
-              onSubmit={onSubmit}
+              onSubmit={onSubmitEdit}
             >
               {({ values, handleChange, handleSubmit, errors, touched }) => (
                 <form onSubmit={handleSubmit}>
@@ -354,11 +696,11 @@ const RecyclingLocation = () => {
                       value={values.state}
                       onChange={handleChange}
                     >
-                      { malaysiaStates.map((state) => (
-                          <MenuItem key={state} value={state}>
-                            {state}
-                          </MenuItem>
-                        ))}
+                      {malaysiaStates.map((state) => (
+                        <MenuItem key={state} value={state}>
+                          {state}
+                        </MenuItem>
+                      ))}
                     </Select>
                     <InputLabel htmlFor="state">State</InputLabel>
                   </FormControl>
@@ -376,7 +718,6 @@ const RecyclingLocation = () => {
                     </Select>
                     <InputLabel htmlFor="country">Country</InputLabel>
                   </FormControl>
-
                   <TextField
                     label="Contact Number"
                     id="contactNumber"
@@ -431,9 +772,9 @@ const RecyclingLocation = () => {
                       sx={{
                         padding: "0.5rem 1rem",
                         color: theme.palette.neutral[1000],
-                        backgroundColor: theme.palette.primary.light,
+                        backgroundColor: theme.palette.yellow.main,
                         "&:hover": {
-                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.neutral[10],
                         },
                       }}
                     >
@@ -444,13 +785,13 @@ const RecyclingLocation = () => {
                       sx={{
                         padding: "0.5rem 1rem",
                         color: theme.palette.neutral[1000],
-                        backgroundColor: theme.palette.primary.light,
+                        backgroundColor: theme.palette.yellow.main,
                         "&:hover": {
-                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.neutral[10],
                         },
                       }}
                     >
-                      Create
+                      Save
                     </Button>
                   </DialogActions>
                 </form>
@@ -458,275 +799,9 @@ const RecyclingLocation = () => {
             </Formik>
           </DialogContent>
         </Dialog>
-      </div>
-      <Paper>
-        <TableContainer>
-          <Table>
-            <TableHead style={{ backgroundColor: theme.palette.primary.main }}>
-              <TableRow>
-                <TableCell style={{ color: "#ffffff" }}>
-                  LOCATION NAME
-                </TableCell>
-                <TableCell style={{ color: "#ffffff" }}>ADDRESS</TableCell>
-                <TableCell style={{ color: "#ffffff" }}>
-                  CONTACT NUMBER
-                </TableCell>
-                {/* <TableCell>Waste Types</TableCell> */}
-                <TableCell style={{ color: "#ffffff" }}>LATITUDE</TableCell>
-                <TableCell style={{ color: "#ffffff" }}>LONGITUDE</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {recycleLocations.data &&
-                recycleLocations.data.map((row) => (
-                  <TableRow key={row._id}>
-                    <TableCell>{row.locationName}</TableCell>
-                    <TableCell>{`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}</TableCell>
-                    <TableCell>{row.contactNumber}</TableCell>
-                    <TableCell>{row.latitude}</TableCell>
-                    <TableCell>{row.longitude}</TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        aria-label="edit"
-                        onClick={() => handleEdit(row._id)}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => handleDelete(row._id)}
-                      >
-                        <Delete sx={{ color: "#e00a33" }} />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Pagination
-            sx={{
-              m: "1rem 0",
-              "& .Mui-selected": { backgroundColor: "rgba(13,110,253,0.5)" },
-            }}
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            siblingCount={1}
-            showFirstButton
-            showLastButton
-          />
-        </Box>
-      </Paper>
-      <Dialog open={openEditDialog} onClose={handleClose}>
-        <DialogTitle>
-          Edit Recycling Collection Location for {recycleLocation.locationName}
-        </DialogTitle>
-        <DialogContent>
-          <Formik
-            initialValues={{
-              id: recycleLocation._id,
-              locationName: recycleLocation.locationName,
-              street: recycleLocation.address
-                ? recycleLocation.address.street
-                : "",
-              city: recycleLocation.address ? recycleLocation.address.city : "",
-              postalCode: recycleLocation.address
-                ? recycleLocation.address.postalCode
-                : "",
-                state: recycleLocation.address
-                ? recycleLocation.address.state
-                : "",
-              country: recycleLocation.address
-                ? recycleLocation.address.country
-                : "",
-              contactNumber: recycleLocation.contactNumber,
-              latitude: recycleLocation.latitude,
-              longitude: recycleLocation.longitude,
-            }}
-            validationSchema={validationSchema}
-            onSubmit={onSubmitEdit}
-          >
-            {({ values, handleChange, handleSubmit, errors, touched }) => (
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  label="Location Name"
-                  id="locationName"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="locationName"
-                  value={values.locationName}
-                  onChange={handleChange}
-                  error={errors.locationName && touched.locationName}
-                  helperText={
-                    touched.locationName && errors.locationName ? (
-                      <span style={{ color: "red" }}>
-                        {errors.locationName}
-                      </span>
-                    ) : null
-                  }
-                />
-
-                <TextField
-                  label="Street Address"
-                  id="street"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="street"
-                  value={values.street}
-                  onChange={handleChange}
-                  error={errors.street && touched.street}
-                  helperText={
-                    touched.street && errors.street ? (
-                      <span style={{ color: "red" }}>{errors.street}</span>
-                    ) : null
-                  }
-                />
-                <TextField
-                  label="City"
-                  id="city"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="city"
-                  value={values.city}
-                  onChange={handleChange}
-                  error={errors.city && touched.city}
-                  helperText={
-                    touched.city && errors.city ? (
-                      <span style={{ color: "red" }}>{errors.city}</span>
-                    ) : null
-                  }
-                />
-                <TextField
-                  label="Postal Code"
-                  id="postalCode"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="postalCode"
-                  value={values.postalCode}
-                  onChange={handleChange}
-                  error={errors.postalCode && touched.postalCode}
-                  helperText={
-                    touched.postalCode && errors.postalCode ? (
-                      <span style={{ color: "red" }}>{errors.postalCode}</span>
-                    ) : null
-                  }
-                />
-                  <FormControl fullWidth sx={{ margin: "1rem 0" }}>
-                    <Select
-                      labelId="State"
-                      label="State"
-                      id="state"
-                      name="state"
-                      value={values.state}
-                      onChange={handleChange}
-                    >
-                      { malaysiaStates.map((state) => (
-                          <MenuItem key={state} value={state}>
-                            {state}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    <InputLabel htmlFor="state">State</InputLabel>
-                  </FormControl>
-
-                  <FormControl fullWidth sx={{ margin: "1rem 0" }}>
-                    <Select
-                      labelId="Country"
-                      label="Country"
-                      id="country"
-                      name="country"
-                      value={values.country}
-                      onChange={handleChange}
-                    >
-                      <MenuItem value="Malaysia">Malaysia</MenuItem>
-                    </Select>
-                    <InputLabel htmlFor="country">Country</InputLabel>
-                  </FormControl>
-                <TextField
-                  label="Contact Number"
-                  id="contactNumber"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="contactNumber"
-                  value={values.contactNumber}
-                  onChange={handleChange}
-                  error={errors.contactNumber && touched.contactNumber}
-                  helperText={
-                    touched.contactNumber && errors.contactNumber ? (
-                      <span style={{ color: "red" }}>
-                        {errors.contactNumber}
-                      </span>
-                    ) : null
-                  }
-                />
-                <TextField
-                  label="Latitude"
-                  id="Latitude"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="latitude"
-                  value={values.latitude}
-                  onChange={handleChange}
-                  error={errors.latitude && touched.latitude}
-                  helperText={
-                    touched.latitude && errors.latitude ? (
-                      <span style={{ color: "red" }}>{errors.latitude}</span>
-                    ) : null
-                  }
-                />
-
-                <TextField
-                  label="Longitude"
-                  id="longitude"
-                  fullWidth
-                  sx={{ my: 2 }}
-                  name="longitude"
-                  value={values.longitude}
-                  onChange={handleChange}
-                  error={errors.longitude && touched.longitude}
-                  helperText={
-                    touched.longitude && errors.longitude ? (
-                      <span style={{ color: "red" }}>{errors.longitude}</span>
-                    ) : null
-                  }
-                />
-                <DialogActions>
-                  <Button
-                    onClick={handleClose}
-                    sx={{
-                      padding: "0.5rem 1rem",
-                      color: theme.palette.neutral[1000],
-                      backgroundColor: theme.palette.yellow.main,
-                      "&:hover": {
-                        color: theme.palette.neutral[10],
-                      },
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    sx={{
-                      padding: "0.5rem 1rem",
-                      color: theme.palette.neutral[1000],
-                      backgroundColor: theme.palette.yellow.main,
-                      "&:hover": {
-                        color: theme.palette.neutral[10],
-                      },
-                    }}
-                  >
-                    Save
-                  </Button>
-                </DialogActions>
-              </form>
-            )}
-          </Formik>
-        </DialogContent>
-      </Dialog>
-    </Box>
+      </Box>
+ 
+    </>
   );
 };
 

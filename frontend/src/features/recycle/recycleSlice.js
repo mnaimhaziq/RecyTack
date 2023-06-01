@@ -19,6 +19,7 @@ import {
 } from "./recycleFunction/recyclingHistoryFunction";
 
 const initialState = {
+  allRecycleLocations: [],
   recycleLocations: [],
   recycleLocationById: {},
   recycleHistoryById: {},
@@ -41,6 +42,7 @@ export const recycleSlice = createSlice({
       state.isError = false;
       state.isSuccess = false;
       state.message = "";
+      state.allRecycleLocations =  [];
       state.recycleLocationById = {};
       state.error = "";
       state.recycleLocations = [];
@@ -95,13 +97,13 @@ export const recycleSlice = createSlice({
       .addCase(getAllRecycleLocation.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.recycleLocations = action.payload;
+        state.allRecycleLocations = action.payload;
       })
       .addCase(getAllRecycleLocation.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
-        state.recycleLocations = null;
+        state.allRecycleLocations = null;
       })
       //Delete RecycleLocation
       .addCase(deleteRecycleLocation.pending, (state) => {

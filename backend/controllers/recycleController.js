@@ -39,10 +39,29 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
 });
 
 
-// @desc     Get All Recycling Locations in Reverse Order or Search By Keyword
+// @desc     Get All Recycling Locations in Reverse Order
+// @route    GET /api/recycle/location
+// @access   Private
+const getAllRecyclingLocations = asyncHandler(async (req, res, next) => {
+  try {
+    const recyclingLocations = await RecyclingCollection.find().sort({
+      _id: -1,
+    });
+
+    res.json({
+      data: recyclingLocations,
+      page: 1,
+      pages: 1,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc     Get Recycling Locations by Page and Search Keyword
 // @route    GET /api/recycle/location?page=1&search=keyword
 // @access   Private
-const getAllRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
+const getRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
   const pageSize = 10;
   let page = Number(req.query.page) || 1;
   const searchKeyword = req.query.search || "";
@@ -56,33 +75,21 @@ const getAllRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
 
     const count = await RecyclingCollection.countDocuments(query);
 
-    // If page is not selected, set page to 1
-    if (!req.query.page && !req.query.search) {
-      const recyclingLocations = await RecyclingCollection.find().sort({
-        _id: -1,
-      });
+    const recyclingLocations = await RecyclingCollection.find(query)
+      .sort({ _id: -1 })
+      .skip(pageSize * (page - 1))
+      .limit(pageSize);
 
-      res.json({
-        data: recyclingLocations,
-        page: 1,
-        pages: 1,
-      });
-    } else {
-      const recyclingLocations = await RecyclingCollection.find(query)
-        .sort({ _id: -1 })
-        .skip(pageSize * (page - 1))
-        .limit(pageSize);
-
-      res.json({
-        data: recyclingLocations,
-        page,
-        pages: Math.ceil(count / pageSize),
-      });
-    }
+    res.json({
+      data: recyclingLocations,
+      page,
+      pages: Math.ceil(count / pageSize),
+    });
   } catch (error) {
     next(error);
   }
 });
+
 
 
 // @desc     Delete a Recycling Location
@@ -385,7 +392,8 @@ const getRecyclingPercentagesByUser = asyncHandler(async (req, res, next) => {
 
 export {
   createRecyclingLocation,
-  getAllRecyclingLocationsByPage,
+  getAllRecyclingLocations,
+  getRecyclingLocationsByPage,
   deleteRecyclingLocation,
   updateRecyclingLocation,
   getRecyclingLocationById,
