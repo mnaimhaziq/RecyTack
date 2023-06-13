@@ -24,7 +24,7 @@ const getAllRecycleLocation = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + `location` ,config);
+  const response = await axios.get(API_URL + `location/all` ,config);
   return response.data;
 }
 
@@ -109,16 +109,16 @@ const createRecycleCollection = async (newFormData, token) => {
  
 }
 
-  const getRecycleHistoryByUserId = async (id, token) => {
+const getTotalRecyclingHistoryByUserId = async (id, token) => {
   
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    const response = await axios.get(API_URL + `getRecyclingHistoryByUserId/${id}`, config);
-    return response.data; // return the deleted user id to update the Redux store
- 
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + `getTotalRecyclingHistoryByUserId/${id}`, config);
+  return response.data; // return the deleted user id to update the Redux store
+
 }
 
 const getMostRecycledWasteType = async (id, token) => {
@@ -129,7 +129,6 @@ const getMostRecycledWasteType = async (id, token) => {
     },
   };
   const response = await axios.get(API_URL + `getMostRecycledWasteType/${id}`, config);
-  console.log(response.data)
   return response.data; // return the deleted user id to update the Redux store
 
 }
@@ -164,11 +163,22 @@ const updateRecycleHistoryById = async (id, newFormData, token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.put(API_URL + `recycling-history/${id}`, newFormData, config);
+  const response = await axios.put(API_URL + `update/${id}`, newFormData, config);
   return response.data; // return the deleted user id to update the Redux store
 
 }
 
+const getRecyclingPercentagesByUser = async (id, token) => {
+  
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + `percentages/${id}`, config);
+  return response.data; // return the deleted user id to update the Redux store
+
+}
 
 
   const recycleService = {
@@ -180,11 +190,12 @@ const updateRecycleHistoryById = async (id, newFormData, token) => {
    deleteRecycleHistory,
    getRecycleLocationById,
    getRecycleHistoryById,
-   getRecycleHistoryByUserId,
+   getTotalRecyclingHistoryByUserId,
    getRecycleHistoryByUserIdAndPage,
    updateRecycleLocationById,
    updateRecycleHistoryById,
    getMostRecycledWasteType,
+   getRecyclingPercentagesByUser,
   };
   
   export default recycleService;

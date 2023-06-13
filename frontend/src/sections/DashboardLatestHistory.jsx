@@ -20,12 +20,39 @@ import { Link, } from 'react-router-dom';
 export const DashboardLatestHistory = (props) => {
   const {  recyclingHistoriesTop8, sx } = props;
 
+  if (recyclingHistoriesTop8.length === 0) {
+    return (
+      <Card sx={sx}>
+        <CardHeader title="Latest Recycling History" />
+        <Box sx={{ height: "80%", display: "flex", justifyContent: "center", alignItems: "center"}}>
+          <h3>No recycling history available.</h3>
+        </Box>
+        <Divider />
+        <CardActions sx={{ justifyContent: 'flex-end' }}>
+          <Link to="/recyclinghistory">
+            <Button
+              color="inherit"
+              endIcon={(
+                <SvgIcon fontSize="small">
+                  <ArrowRightIcon />
+                </SvgIcon>
+              )}
+              size="small"
+              variant="text"
+            >
+              View all
+            </Button>
+          </Link>
+        </CardActions>
+      </Card>
+    );
+  }
 
   return (
     <Card sx={sx}>
       <CardHeader title="Latest Recycling History" />
       
-        <Box  sx={{ overflowX: 'auto' }}>
+        <Box  sx={{ height: "80%",overflowX: 'auto' }}>
           <Table>
             <TableHead>
               <TableRow>

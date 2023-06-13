@@ -63,7 +63,7 @@ const Profile = () => {
       </Box>
 
       <Box>
-      <img src={user.picture.url}/>        
+      <img src={user.picture.url} width="30px"/>        
 
         <Formik
           initialValues={initialValues}

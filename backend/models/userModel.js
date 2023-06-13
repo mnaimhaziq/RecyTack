@@ -46,7 +46,12 @@ const userSchema = mongoose.Schema(
         type: String,
         required: true,
       },
+      
     },
+    darkMode: {
+      type: String,
+      default: "light"
+    }
   },
   {
     // Automatically updates the creation and update timestamps

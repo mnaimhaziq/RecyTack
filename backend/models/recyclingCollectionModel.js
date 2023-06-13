@@ -18,6 +18,10 @@ const recyclingCollectionSchema = mongoose.Schema({
       type: String,
       required: true,
     },
+    state: {
+      type: String,
+      required: true,
+    },
     country: {
       type: String,
       required: true,
@@ -35,6 +39,7 @@ const recyclingCollectionSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
+  
 });
 
 const RecyclingCollection = mongoose.model("RecyclingCollection", recyclingCollectionSchema);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   LightModeOutlined,
   DarkModeOutlined,
@@ -9,7 +9,7 @@ import {
 import FlexBetween from "./FlexBetween";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setMode } from "../features/globalSlice";
+import { setMode, updateDarkMode } from "../features/auth/authSlice";
 import {
   AppBar,
   IconButton,
@@ -21,7 +21,6 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
-import jwt_decode from "jwt-decode";
 
 import { logout, resetUser } from "../features/auth/authSlice";
 import { resetRecycling } from "../features/recycle/recycleSlice";
@@ -35,10 +34,11 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
   const isOpen = Boolean(anchorEl);
   const handleClick = (e) => setAnchorEl(e.currentTarget);
   const handleClose =() => setAnchorEl(null);
-
   
   const setModeHandler = () => {
     dispatch(setMode());
+    const userId = user._id
+    dispatch(updateDarkMode({ userId, darkMode: theme.palette.mode === 'dark' ? 'light' : 'dark', token: user.token }));
   };
 
   const logoutHandler = () => {
@@ -62,7 +62,7 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
         boxShadow: "none",
         // boxShadow: `0px 0.5px 3px rgb(255,255,255)`,
         borderBottom: `0.5px solid ${theme.palette.grey[700]}`, 
-        zIndex: "500",
+        zIndex: "1100",
         marginBottom: "2rem"
       }}
     >

@@ -1,11 +1,10 @@
 import RecyclingCollection from "../models/recyclingCollectionModel.js";
-import WasteType from "../models/wasteTypeModel.js";
 import RecyclingHistory from "../models/recyclingHistoryModel.js";
 import asyncHandler from "express-async-handler";
-import mongoose from "mongoose";
 
-// @desc     Create new recycling location
-// @route    POST /api/recycling-locations
+
+// @desc     Create New Recycling Location
+// @route    POST /api/recycle/location/create
 // @access   Private/Admin
 const createRecyclingLocation = asyncHandler(async (req, res) => {
   const { locationName, address, contactNumber, latitude, longitude } =
@@ -39,10 +38,30 @@ const createRecyclingLocation = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc     Get all recycling locations in reverse order or search by keyword
-// @route    GET /api/recycling-locations/reverse?page=1&search=keyword
+
+// @desc     Get All Recycling Locations in Reverse Order
+// @route    GET /api/recycle/location
 // @access   Private
-const getAllRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
+const getAllRecyclingLocations = asyncHandler(async (req, res, next) => {
+  try {
+    const recyclingLocations = await RecyclingCollection.find().sort({
+      _id: -1,
+    });
+
+    res.json({
+      data: recyclingLocations,
+      page: 1,
+      pages: 1,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc     Get Recycling Locations by Page and Search Keyword
+// @route    GET /api/recycle/location?page=1&search=keyword
+// @access   Private
+const getRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
   const pageSize = 10;
   let page = Number(req.query.page) || 1;
   const searchKeyword = req.query.search || "";
@@ -56,36 +75,25 @@ const getAllRecyclingLocationsByPage = asyncHandler(async (req, res, next) => {
 
     const count = await RecyclingCollection.countDocuments(query);
 
-    // If page is not selected, set page to 1
-    if (!req.query.page && !req.query.search) {
-      const recyclingLocations = await RecyclingCollection.find().sort({
-        _id: -1,
-      });
+    const recyclingLocations = await RecyclingCollection.find(query)
+      .sort({ _id: -1 })
+      .skip(pageSize * (page - 1))
+      .limit(pageSize);
 
-      res.json({
-        data: recyclingLocations,
-        page: 1,
-        pages: 1,
-      });
-    } else {
-      const recyclingLocations = await RecyclingCollection.find(query)
-        .sort({ _id: -1 })
-        .skip(pageSize * (page - 1))
-        .limit(pageSize);
-
-      res.json({
-        data: recyclingLocations,
-        page,
-        pages: Math.ceil(count / pageSize),
-      });
-    }
+    res.json({
+      data: recyclingLocations,
+      page,
+      pages: Math.ceil(count / pageSize),
+    });
   } catch (error) {
     next(error);
   }
 });
 
-// @desc     Delete a recycling location
-// @route    DELETE /api/recycling-locations/:id
+
+
+// @desc     Delete a Recycling Location
+// @route    DELETE /api/recycle/location/:id
 // @access   Private/Admin
 const deleteRecyclingLocation = asyncHandler(async (req, res) => {
   const recyclingLocation = await RecyclingCollection.findByIdAndDelete(
@@ -99,8 +107,9 @@ const deleteRecyclingLocation = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc     Update a recycling location
-// @route    PUT /api/recycling-locations/:id
+
+// @desc     Update a Recycling Location
+// @route    PUT /api/location/:id
 // @access   Private/Admin
 const updateRecyclingLocation = asyncHandler(async (req, res) => {
   const { locationName, address, contactNumber, latitude, longitude } =
@@ -124,6 +133,10 @@ const updateRecyclingLocation = asyncHandler(async (req, res) => {
   }
 });
 
+
+// @desc     Get Recycling Location By ID
+// @route    Get /api/location/:id
+// @access   Private
 const getRecyclingLocationById = asyncHandler(async (req, res) => {
   const recyclingLocation = await RecyclingCollection.findById(req.params.id);
 
@@ -135,11 +148,15 @@ const getRecyclingLocationById = asyncHandler(async (req, res) => {
   res.json(recyclingLocation);
 });
 
+
+// @desc     Create New Recycling History
+// @route    POST /api/recycle/create
+// @access   Private
 const createRecycle = async (req, res) => {
   try {
     const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
       req.body;
-    const userId = req.user._id; // assume you have implemented authentication middleware to get the user id
+    const userId = req.user._id; 
 
     // Create a new recycling history record
     const recyclingHistory = new RecyclingHistory({
@@ -158,40 +175,54 @@ const createRecycle = async (req, res) => {
       .json({ message: "Recycling history record created successfully." });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({
-        error: "An error occurred while creating the recycling history record.",
-      });
+    res.status(500).json({
+      error: "An error occurred while creating the recycling history record.",
+    });
   }
 };
 
-const getRecyclingHistoryById = asyncHandler(async (req, res) => {
+
+// @desc     Delete a Recycling History
+// @route    DELETE /api/recycle/delete/:id
+// @access   Private
+const deleteRecyclingHistory = asyncHandler(async (req, res) => {
+  const recyclingHistory = await RecyclingHistory.findByIdAndDelete(
+    req.params.id
+  );
+
+  if (recyclingHistory) {
+    res.json({ message: "Recycling History removed" });
+  } else {
+    res.status(404).json({ error: "Recycling history not found" });
+  }
+});
+
+
+// @desc     Update a Recycling History
+// @route    PUT /api/recycle/update/:id
+// @access   Private
+const updateRecyclingHistory = asyncHandler(async (req, res) => {
+  const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
+    req.body;
   const recyclingHistory = await RecyclingHistory.findById(req.params.id);
 
-  if (!recyclingHistory) {
-    res.status(404);
-    throw new Error("Recycling History not found");
-  }
+  if (recyclingHistory) {
+    recyclingHistory.recyclingLocation =
+      recyclingLocationId || recyclingHistory.recyclingLocationId;
+    recyclingHistory.recyclingMethod =
+      recyclingMethod || recyclingHistory.recyclingMethod;
+    recyclingHistory.quantity = quantity || recyclingHistory.quantity;
+    recyclingHistory.wasteType = wasteType || recyclingHistory.wasteType;
 
-  res.json(recyclingHistory);
+    const updatedRecyclingHistory = await recyclingHistory.save();
+   
+    res.json(updatedRecyclingHistory);
+  } else {
+    res.status(404).json({ error: "Recycling history not found" });
+  }
 });
 
-const getRecyclingHistoryByUserId = asyncHandler(async (req, res) => {
-  const userId = req.params.id;
-  const recyclingHistory = await RecyclingHistory.find({ user: userId });
-  
-  if (!recyclingHistory) {
-    res.status(404);
-    throw new Error("Recycling History not found");
-  }
 
-  res.status(200).json(recyclingHistory);
-});
-
-// @desc  GET Recycling History By User ID and Page
-// @route    GET /api/recycle/getRecyclingHistory/:id
-// @access   Private
 const getRecyclingHistoryByUserIdAndPage = async (req, res) => {
   const pageSize = 8;
   let page = Number(req.query.page) || 1;
@@ -210,6 +241,12 @@ const getRecyclingHistoryByUserIdAndPage = async (req, res) => {
       .limit(pageSize);
 
     const totalCount = await RecyclingHistory.countDocuments({ user: userId });
+
+    recyclingHistory.forEach((record) => {
+      if (!record.recyclingLocation) {
+        record.recyclingLocation = null;
+      }
+    });
 
     const pagination = {};
 
@@ -234,63 +271,59 @@ const getRecyclingHistoryByUserIdAndPage = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({
-        error:
-          "An error occurred while retrieving the recycling history records.",
-      });
+    res.status(500).json({
+      error:
+        "An error occurred while retrieving the recycling history records.",
+    });
   }
 };
 
 
 
-// @desc     Update a recycling history
-// @route    PUT /api/recycling-history/:id
-// @access   Private/Admin
-const updateRecyclingHistory = asyncHandler(async (req, res) => {
-  const {  recyclingLocationId, recyclingMethod, quantity, wasteType } =
-    req.body;
-
-  const recyclingHistory= await RecyclingHistory.findById(req.params.id);
-
-  if (recyclingHistory) {
-    recyclingHistory.recyclingLocationId =
-      recyclingLocationId || recyclingHistory.recyclingLocationId;
-      recyclingHistory.recyclingMethod = recyclingMethod || recyclingHistory.recyclingMethod;
-      recyclingHistory.quantity =
-      quantity || recyclingHistory.quantity;
-      recyclingHistory.wasteType = wasteType || recyclingHistory.wasteType;
-
-    const updatedRecyclingHistory = await recyclingHistory.save();
-    res.json(updatedRecyclingHistory);
-  } else {
-    res.status(404).json({ error: "Recycling history not found" });
-  }
-});
-
-// @desc     Delete a recycling location
-// @route    DELETE /api/recycling-locations/:id
-// @access   Private/Admin
-const deleteRecyclingHistory = asyncHandler(async (req, res) => {
-  const recyclingHistory = await RecyclingHistory.findByIdAndDelete(
-    req.params.id
-  );
-
-  if (recyclingHistory) {
-    res.json({ message: "Recycling History removed" });
-  } else {
-    res.status(404).json({ error: "Recycling history not found" });
-  }
-});
-
-const getMostRecycledWasteType = asyncHandler(async (req, res) => {
-  const userId = req.params.id;
-  const recyclingHistory = await RecyclingHistory.find({ user: userId });
+// @desc     GET Recycling History By its ID
+// @route    GET /api/recycle/getRecyclingHistoryById/:id
+// @access   Private
+const getRecyclingHistoryById = asyncHandler(async (req, res) => {
+  const recyclingHistory = await RecyclingHistory.findById(req.params.id);
 
   if (!recyclingHistory) {
     res.status(404);
     throw new Error("Recycling History not found");
+  }
+
+  res.json(recyclingHistory);
+});
+
+
+// @desc     GET Total Recycling History By User ID
+// @route    GET /api/recycle/getTotalRecyclingHistoryByUserId/:id
+// @access   Private
+const getTotalRecyclingHistoryByUserId = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const recyclingHistory = await RecyclingHistory.find({ user: userId });
+
+  const recyclingHistoryCount = recyclingHistory.length;
+
+  if (recyclingHistoryCount === 0) {
+    res.status(200).json("Recycling History not found");
+  }
+
+  res.status(200).json({
+    count: recyclingHistoryCount,
+  });
+});
+
+
+// @desc     GET Total Recycling History By User ID
+// @route    GET /api/recycle/getMostRecycledWasteType/:id
+// @access   Private
+const getMostRecycledWasteType = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const recyclingHistory = await RecyclingHistory.find({ user: userId });
+
+  if (!recyclingHistory || recyclingHistory.length === 0) {
+    // Return an empty response or an appropriate message
+    return res.status(200).json({ mostRecycledWasteType: "None" });
   }
 
   const wasteTypeMap = {};
@@ -302,24 +335,74 @@ const getMostRecycledWasteType = asyncHandler(async (req, res) => {
     }
   });
 
-  const sortedWasteTypes = Object.entries(wasteTypeMap).sort((a, b) => b[1] - a[1]);
+  const sortedWasteTypes = Object.entries(wasteTypeMap).sort(
+    (a, b) => b[1] - a[1]
+  );
 
   const mostRecycledWasteType = sortedWasteTypes[0][0];
 
   res.status(200).json({ mostRecycledWasteType });
 });
 
+const getRecyclingPercentagesByUser = asyncHandler(async (req, res, next) => {
+  const userId = req.params.id;
+
+  try {
+    // Get all recycling records for the user
+    const userRecycling = await RecyclingHistory.find({ user: userId });
+
+    // Calculate recycling quantities for each waste type
+    const wasteTypes = await RecyclingHistory.distinct("wasteType", { user: userId });
+    const totalRecyclingQuantities = {};
+    for (const wasteType of wasteTypes) {
+      const wasteTypeRecycling = userRecycling.filter(
+        (recycling) => recycling.wasteType === wasteType
+      );
+      const wasteTypeQuantity = wasteTypeRecycling.reduce((total, recycling) => {
+        return total + recycling.quantity;
+      }, 0);
+      totalRecyclingQuantities[wasteType] = wasteTypeQuantity;
+    }
+
+    // Calculate recycling percentages for each waste type
+    const recyclingPercentages = {};
+    const totalQuantity = Object.values(totalRecyclingQuantities).reduce((total, quantity) => {
+      return total + quantity;
+    }, 0);
+    for (const [wasteType, quantity] of Object.entries(totalRecyclingQuantities)) {
+      const percentage = ((quantity / totalQuantity) * 100).toFixed(2);
+      recyclingPercentages[wasteType] = percentage;
+    }
+
+    // Sort the result by percentage values in ascending order
+    const sortedResult = Object.entries(recyclingPercentages).sort((a, b) => b[1] - a[1]);
+    const sortedRecyclingPercentages = {};
+    for (const [wasteType, percentage] of sortedResult) {
+      sortedRecyclingPercentages[wasteType] = percentage;
+    }
+
+    res.json(sortedRecyclingPercentages);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
+
 export {
   createRecyclingLocation,
-  getAllRecyclingLocationsByPage,
+  getAllRecyclingLocations,
+  getRecyclingLocationsByPage,
   deleteRecyclingLocation,
   updateRecyclingLocation,
   getRecyclingLocationById,
   createRecycle,
   getRecyclingHistoryById,
-  getRecyclingHistoryByUserId,
+  getTotalRecyclingHistoryByUserId,
   deleteRecyclingHistory,
   updateRecyclingHistory,
   getRecyclingHistoryByUserIdAndPage,
   getMostRecycledWasteType,
+  getRecyclingPercentagesByUser
 };

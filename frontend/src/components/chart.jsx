@@ -9,7 +9,7 @@ const Chart = styled(ApexCharts)`
 
 function MyChart({ chartOptions, chartSeries,type }) {
   return (
-    <Chart
+    <Chart 
       options={chartOptions}
       series={chartSeries}
       type={type}

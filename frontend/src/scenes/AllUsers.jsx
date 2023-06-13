@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, Rating, useTheme, useMediaQuery, IconButton, InputBase} from '@mui/material'
+import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, Rating, useTheme, useMediaQuery, IconButton, InputBase, Pagination, TextField} from '@mui/material'
 
 import Header from '../components/Header'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,7 +12,12 @@ import { Search } from '@mui/icons-material'
 import { useNavigate, useParams } from 'react-router-dom'
 
 function AllUsers() {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
   const dispatch = useDispatch();
+  
+  const isNonMobile = useMediaQuery("(min-width: 600px)");
   const [keyword, setKeyword] = useState("");
   const theme = useTheme();
   const navigate = useNavigate();
@@ -20,45 +25,69 @@ function AllUsers() {
   const { user } = auth;
   const AllUsers = useSelector((state) => state.auth.AllUsers);
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+    setPage(1);
+  };
 
   useEffect(() => {
-    dispatch(getAllUsers(user.token))
-  },[dispatch])
+    dispatch(getAllUsers({token: user.token, page, search}))
+    setTotalPages(AllUsers.pages)
+  },[dispatch, user.token, page, AllUsers.pages, search])
 
-  const submitHandler = (e) => {
-    e.preventDefault()
-    if(keyword.trim()){
-      navigate(`/search/${keyword}`)
-  }else{
-      navigate('/')
-  }
-  } 
+ 
+   
   return (
     <Box m="1.5rem 2.5rem">
-        <Header title="Users" subtitle="Manage Users" />
-        <FlexBetween m="1rem 0 ">
-          <FlexBetween
-            backgroundColor={theme.palette.background.alt}
-            borderRadius="9px"
-            gap="3rem"
-            p="0.1rem 1.5rem"
-            
-          >
-            <form onSubmit={submitHandler}>
-            <InputBase placeholder="Search..." onChange={(e) => setKeyword(e.target.value)}/>
-            <IconButton type="submit">
-              <Search />
-            </IconButton>
-            </form>
-           
-          </FlexBetween>
-        </FlexBetween>
-        <Row>{AllUsers.map((user) => (
-          <Col key={user._id} sm={12} md={6} lg={4} xl={3}>
-          <Users user={user} />
+       <Box
+        display={isNonMobile ? "flex" : "block"}
+        sx={{
+          alignItems: "center",
+          justifyContent: "space-between",
+          m: "2rem 2rem 3rem"
+        }}
+      >
+        <Header title="Manage Users" />
+
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <TextField
+            id="search"
+            label="Search By User Name"
+            variant="outlined"
+            size="small"
+            value={search}
+            onChange={handleSearchChange}
+          />
+          
+        </Box>
+      </Box>
+       
+        <Row>{AllUsers.data && AllUsers.data.map((user) => (
+          <Col key={user._id} sm={12} md={4} lg={3}>
+          <Users user={user}  />
         </Col>
         ))}
         </Row>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Pagination
+            sx={{
+              m: "2rem 0",
+              "& .Mui-selected": { backgroundColor: "rgba(13,110,253,0.4) !important" },
+            }}
+            count={totalPages}
+            page={page}
+            variant="outlined"
+            onChange={handlePageChange}
+            siblingCount={1}
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+        
     </Box>
   )
 }
