@@ -3,26 +3,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import FooterList from "../components/footer/FooterList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch, useSelector } from "react-redux";
 
 const Home = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const auth = useSelector((state) => state.auth);
+  const { user } = auth;
 
-  useEffect(() => {
-    const getAdminStatus = async () => {
-      try {
-        const jsonValue = await AsyncStorage.getItem("auth-rn");
-        const value = JSON.parse(jsonValue);
-        setIsAdmin(value.isAdmin);
-      } catch (e) {
-        console.error("Failed to get admin status from AsyncStorage", e);
-      }
-    };
-    getAdminStatus();
-  }, []);
+  
+  //const dispatch = useDispatch();
 
   return (
     <View style={styles.container}>
-      {isAdmin ? (
+      {user.isAdmin ? (
         <Text style={styles.mainText}>Welcome, Admin!</Text>
       ) : (
         <Text style={styles.mainText}>Welcome, User!</Text>

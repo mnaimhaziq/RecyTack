@@ -7,15 +7,21 @@ import Login from "../screens/Login";
 import Register from "../screens/Register";
 import Home from "../screens/Home";
 import Recycling from "../screens/Recycling";
+import { useSelector } from "react-redux";
 
 const Stack = createNativeStackNavigator();
 
 const NavigationScreen = () => {
-  const [state, setState] = useContext(AuthContext);
-  const auth = state && state.token !== "" && state.user !== null;
+  // const [state, setState] = useContext(AuthContext);
+  // const auth = state && state.token !== "" && state.user !== null;
+
+  const auth = useSelector((state) => {
+    const { token, user } = state.auth;
+    return token !== "" && user !== null;
+  });
 
   return (
-    <Stack.Navigator initialRouteName="Home">
+    <Stack.Navigator>
       {auth ? (
         <>
           <Stack.Screen
