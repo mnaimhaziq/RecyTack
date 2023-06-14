@@ -49,7 +49,9 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
 
   };
   const profilehandler = () => {
+    setAnchorEl(null)
     navigate(`/userprofile`)
+    
   }
 
 
@@ -62,7 +64,7 @@ function Navbar({user, isSidebarOpen, setIsSidebarOpen, isNonMobile }) {
         boxShadow: "none",
         // boxShadow: `0px 0.5px 3px rgb(255,255,255)`,
         borderBottom: `0.5px solid ${theme.palette.grey[700]}`, 
-        zIndex: "1100",
+        zIndex: "1099",
         marginBottom: "2rem"
       }}
     >

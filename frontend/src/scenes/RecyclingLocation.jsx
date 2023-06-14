@@ -43,8 +43,9 @@ import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap, Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
-import mapPointerIcon from "../assets/mapPointerIcon.png"
-import MarkerClusterGroup from 'react-leaflet-cluster'
+import mapPointerIcon from "../assets/mapPointerIcon.png";
+import MarkerClusterGroup from "react-leaflet-cluster";
+import Swal from "sweetalert2";
 const RecyclingLocation = () => {
   const [open, setOpen] = useState(false);
   const [malaysiaStates, setMalaysiaStates] = useState([
@@ -70,9 +71,11 @@ const RecyclingLocation = () => {
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
- // Define mapLink here
-  const mapLink = (latitude, longitude) => `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+  // Define mapLink here
+  const mapLink = (latitude, longitude) =>
+    `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 
+  const isNonMobile = useMediaQuery("(min-width: 942px)");
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
   const recycleLocations = useSelector(
@@ -87,7 +90,6 @@ const RecyclingLocation = () => {
   );
 
   const dispatch = useDispatch();
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
   const theme = useTheme();
   const customIcon = new Icon({
     iconUrl: mapPointerIcon,
@@ -125,20 +127,32 @@ const RecyclingLocation = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this location?")) {
-      await dispatch(deleteRecycleLocation({ id, token: user.token })).then(
-        () => {
-          dispatch(
-            getAllRecycleLocationByPageAndKeyword({
-              token: user.token,
-              page,
-              search,
-            })
-          );
-        }
-      ).then(() => {  dispatch(getAllRecycleLocation(user.token));});
-      toast.error("Recycling Location Has Been Deleted ");
-    }
+    await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(deleteRecycleLocation({ id, token: user.token }))
+          .then(() => {
+            dispatch(
+              getAllRecycleLocationByPageAndKeyword({
+                token: user.token,
+                page,
+                search,
+              })
+            );
+          })
+          .then(() => {
+            dispatch(getAllRecycleLocation(user.token));
+          });
+        toast.error("Recycling Location Has Been Deleted ");
+      }
+    });
   };
 
   const initialValues = {
@@ -196,17 +210,19 @@ const RecyclingLocation = () => {
       },
     };
 
-    await dispatch(
-      createRecycleLocation({ newFormData, token: user.token })
-    ).then(() => {
-      dispatch(
-        getAllRecycleLocationByPageAndKeyword({
-          token: user.token,
-          page,
-          search,
-        })
-      );
-    }).then(() => {  dispatch(getAllRecycleLocation(user.token));});
+    await dispatch(createRecycleLocation({ newFormData, token: user.token }))
+      .then(() => {
+        dispatch(
+          getAllRecycleLocationByPageAndKeyword({
+            token: user.token,
+            page,
+            search,
+          })
+        );
+      })
+      .then(() => {
+        dispatch(getAllRecycleLocation(user.token));
+      });
     toast.success("New Recycling Location Created ");
     resetForm();
     setOpen(false);
@@ -243,15 +259,19 @@ const RecyclingLocation = () => {
     try {
       await dispatch(
         updateRecycleLocationById({ id, newFormData, token: user.token })
-      ).then(() => {
-        dispatch(
-          getAllRecycleLocationByPageAndKeyword({
-            token: user.token,
-            page,
-            search,
-          })
-        );
-      }).then(() => {  dispatch(getAllRecycleLocation(user.token));});
+      )
+        .then(() => {
+          dispatch(
+            getAllRecycleLocationByPageAndKeyword({
+              token: user.token,
+              page,
+              search,
+            })
+          );
+        })
+        .then(() => {
+          dispatch(getAllRecycleLocation(user.token));
+        });
       toast.success("Recycling Location Has Been Edited ");
       resetForm();
       setOpenEditDialog(false);
@@ -264,33 +284,50 @@ const RecyclingLocation = () => {
     <>
       <Box m="1.5rem 2.5rem " p="0 0 4rem 0">
         <ToastContainer theme="colored" />
-        {allRecycleLocations && <Box
-        sx={{ display: "flex", justifyContent: "center",  alignItems: "center", marginBottom: "10vh" ,flexDirection:"column"}}
-      >
-        <h3>Explore Recycling Locations on the Map</h3>
-        <MapContainer center={[3.144190, 101.695337]} zoom={13}>
-          /*{" "}
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <MarkerClusterGroup
-          chunkedLoading
+        {allRecycleLocations && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: "10vh",
+              flexDirection: "column",
+            }}
           >
-          {allRecycleLocations.map((recycleLocation) => (
-            
-            <Marker
-              position={[recycleLocation.latitude, recycleLocation.longitude]} icon={customIcon}
-            >
-              <Popup>
-                {recycleLocation.locationName} <br/>
-                <a href={mapLink(recycleLocation.latitude, recycleLocation.longitude)} target="_blank">Open in Google Maps</a>
-              </Popup>
-            </Marker>
-          ))}
-          </MarkerClusterGroup>
-        </MapContainer>
-      </Box>}
+            <h3>Explore Recycling Locations on the Map</h3>
+            <MapContainer center={[3.14419, 101.695337]} zoom={13}>
+              /*{" "}
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MarkerClusterGroup chunkedLoading>
+                {allRecycleLocations.map((recycleLocation) => (
+                  <Marker
+                    position={[
+                      recycleLocation.latitude,
+                      recycleLocation.longitude,
+                    ]}
+                    icon={customIcon}
+                  >
+                    <Popup>
+                      {recycleLocation.locationName} <br />
+                      <a
+                        href={mapLink(
+                          recycleLocation.latitude,
+                          recycleLocation.longitude
+                        )}
+                        target="_blank"
+                      >
+                        Open in Google Maps
+                      </a>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MarkerClusterGroup>
+            </MapContainer>
+          </Box>
+        )}
         <Box
           display={isNonMobile ? "flex" : "block"}
           sx={{
@@ -310,22 +347,25 @@ const RecyclingLocation = () => {
               value={search}
               onChange={handleSearchChange}
             />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleClickOpen}
-              sx={{
-                ml: "1rem",
-                padding: "0.5rem 1rem",
-                color: "#000000",
-                backgroundColor: theme.palette.primary.light,
-                "&:hover": {
-                  color: theme.palette.neutral[1000],
-                },
-              }}
-            >
-              <Add /> Create New Recycling Location
-            </Button>
+            {user.isAdmin && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleClickOpen}
+                sx={{
+                  ml: "1rem",
+                  padding: "0.5rem 1rem",
+                  color: "#000000",
+                  backgroundColor: theme.palette.primary.light,
+                  "&:hover": {
+                    color: theme.palette.neutral[1000],
+                  },
+                }}
+              >
+                <Add />
+                {isNonMobile ? "Create New Recycling Location" : "Create"}
+              </Button>
+            )}
           </Box>
         </Box>
         <div>
@@ -523,7 +563,7 @@ const RecyclingLocation = () => {
             </DialogContent>
           </Dialog>
         </div>
-      
+
         <Paper>
           <TableContainer>
             <Table>
@@ -541,32 +581,50 @@ const RecyclingLocation = () => {
                   {/* <TableCell>Waste Types</TableCell> */}
                   <TableCell style={{ color: "#ffffff" }}>LATITUDE</TableCell>
                   <TableCell style={{ color: "#ffffff" }}>LONGITUDE</TableCell>
-                  <TableCell></TableCell>
+                  {user.isAdmin && <TableCell></TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {recycleLocations.data &&
-                  recycleLocations.data.map((row) => (
-                    <TableRow key={row._id}>
+                  recycleLocations.data.map((row, index) => (
+                    <TableRow key={row._id} sx={{backgroundColor: index % 2 !== 0 && theme.palette.neutral[800] }}>
                       <TableCell>{row.locationName}</TableCell>
                       <TableCell>{`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}</TableCell>
                       <TableCell>{row.contactNumber}</TableCell>
                       <TableCell>{row.latitude}</TableCell>
                       <TableCell>{row.longitude}</TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          aria-label="edit"
-                          onClick={() => handleEdit(row._id)}
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton
-                          aria-label="delete"
-                          onClick={() => handleDelete(row._id)}
-                        >
-                          <Delete sx={{ color: "#e00a33" }} />
-                        </IconButton>
-                      </TableCell>
+                      {user.isAdmin && (
+                        <TableCell align="right">
+                          <IconButton
+                            aria-label="edit"
+                            onClick={() => handleEdit(row._id)}
+                            sx={{
+                              borderRadius: "4px",
+                              backgroundColor: "#007bff",
+                              width: "24px",
+                              height: "24px",
+                              margin: "5px",
+                              padding: "18px",
+                            }}
+                          >
+                            <Edit sx={{ color: "#ffffff" }} />
+                          </IconButton>
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => handleDelete(row.id)}
+                            sx={{
+                              borderRadius: "4px",
+                              backgroundColor: "#e00a33",
+                              width: "24px",
+                              height: "24px",
+                              margin: "5px",
+                              padding: "18px",
+                            }}
+                          >
+                            <Delete sx={{ color: "#ffffff" }} />
+                          </IconButton>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
               </TableBody>
@@ -772,9 +830,9 @@ const RecyclingLocation = () => {
                       sx={{
                         padding: "0.5rem 1rem",
                         color: theme.palette.neutral[1000],
-                        backgroundColor: theme.palette.yellow.main,
+                        backgroundColor: theme.palette.primary.light,
                         "&:hover": {
-                          color: theme.palette.neutral[10],
+                          backgroundColor: theme.palette.primary.main,
                         },
                       }}
                     >
@@ -785,9 +843,9 @@ const RecyclingLocation = () => {
                       sx={{
                         padding: "0.5rem 1rem",
                         color: theme.palette.neutral[1000],
-                        backgroundColor: theme.palette.yellow.main,
+                        backgroundColor: theme.palette.primary.light,
                         "&:hover": {
-                          color: theme.palette.neutral[10],
+                          backgroundColor: theme.palette.primary.main,
                         },
                       }}
                     >
@@ -800,7 +858,6 @@ const RecyclingLocation = () => {
           </DialogContent>
         </Dialog>
       </Box>
- 
     </>
   );
 };

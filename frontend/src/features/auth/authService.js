@@ -41,8 +41,8 @@ const updateProfile = async (userUpdateData) => {
   return response.data;
 };
 
-// Get all users
-const getAllUsers = async (token, page, search) => {
+// Get Users By Page
+const getUsersByPage = async (token, page, search) => {
   
 
   const config = {
@@ -50,7 +50,20 @@ const getAllUsers = async (token, page, search) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + `getAllUsers?page=${page}&search=${search}` ,config);
+  const response = await axios.get(API_URL + `getUsersByPage?page=${page}&search=${search}` ,config);
+  return response.data;
+}
+
+// Get All Users
+const getAllUsers = async (token) => {
+  
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + `getAllUsers` ,config);
   return response.data;
 }
 
@@ -86,6 +99,7 @@ const authService = {
   register,
   login,
   updateProfile,
+  getUsersByPage,
   getAllUsers,
   logout,
   updateDarkMode,

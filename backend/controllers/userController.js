@@ -109,10 +109,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
 
 
-// @desc     Get all users
+// @desc     Get all users By Page
 // @route    GET /api/users
 // @access   Private
-const getUsers = asyncHandler(async (req, res, next) => {
+const getUsersByPage = asyncHandler(async (req, res, next) => {
   const pageSize = 8;
   let page = Number(req.query.page) || 1;
   const searchKeyword = req.query.search || "";
@@ -154,6 +154,22 @@ const getUsers = asyncHandler(async (req, res, next) => {
   }
 });
 
+// @desc     Get all users
+// @route    GET /api/allUsers
+// @access   Private
+const getAllUsers = asyncHandler(async (req, res, next) => {
+  try {
+    const users = await User.find().sort({ _id: -1 });
+
+    res.json({
+      data: users,
+      count: users.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 const updateDarkMode = async (req, res) => {
   const { userId, darkMode } = req.body;
 
@@ -174,4 +190,4 @@ const updateDarkMode = async (req, res) => {
   }
 };
 
-export { authUser, registerUser, updateUserProfile, getUsers, updateDarkMode };
+export { authUser, registerUser, updateUserProfile, getUsersByPage, getAllUsers, updateDarkMode };

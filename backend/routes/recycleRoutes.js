@@ -14,7 +14,8 @@ import {
   getRecyclingHistoryById,
   getMostRecycledWasteType,
   getTotalRecyclingHistoryByUserId,
-  getRecyclingPercentagesByUser
+  getRecyclingPercentagesByUser,
+  getAllRecyclingHistories
 } from "../controllers/recycleController.js";
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.route("/location/:id").get(protect, getRecyclingLocationById);         //
 router.post("/create", protect, createRecycle);                                                       // Create New Recycling History
 router.delete("/delete/:id", protect, deleteRecyclingHistory)                                         // Delete Recycling History
 router.put("/update/:id", protect,  updateRecyclingHistory);                                          // Update Recycling History
+router.get("/getAllRecyclingHistories", protect, admin, getAllRecyclingHistories);     
 router.get("/getRecyclingHistoryByPage/:id", protect, getRecyclingHistoryByUserIdAndPage);            // Get Recycling Histories By User ID and Page
 router.route("/getRecyclingHistoryById/:id").get(protect, getRecyclingHistoryById);                   // Get Recycling History By ID
 router.route("/getTotalRecyclingHistoryByUserId/:id").get(protect, getTotalRecyclingHistoryByUserId); // Get Total Recycling History By User ID

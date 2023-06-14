@@ -98,9 +98,9 @@ export const DashboardLatestHistory = (props) => {
         </Box>
       
       <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
+      <CardActions sx={{ justifyContent: 'flex-end' }} >
         <Link to="/recyclinghistory">
-        <Button
+        <Button 
           color="inherit"
           endIcon={(
             <SvgIcon fontSize="small">

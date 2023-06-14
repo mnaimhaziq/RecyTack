@@ -3,7 +3,7 @@ import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, Rati
 
 import Header from '../components/Header'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAllUsers } from '../features/auth/authSlice'
+import { getUsersByPage } from '../features/auth/authSlice'
 import Users from '../components/Users'
 
 import { Row, Col } from "react-bootstrap";
@@ -23,7 +23,7 @@ function AllUsers() {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
-  const AllUsers = useSelector((state) => state.auth.AllUsers);
+  const AllUsers = useSelector((state) => state.auth.getUsersByPage);
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -35,7 +35,7 @@ function AllUsers() {
   };
 
   useEffect(() => {
-    dispatch(getAllUsers({token: user.token, page, search}))
+    dispatch(getUsersByPage({token: user.token, page, search}))
     setTotalPages(AllUsers.pages)
   },[dispatch, user.token, page, AllUsers.pages, search])
 

@@ -154,9 +154,14 @@ const getRecyclingLocationById = asyncHandler(async (req, res) => {
 // @access   Private
 const createRecycle = async (req, res) => {
   try {
-    const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
+    const { recyclingLocationId, recyclingMethod, quantity, wasteType, user_id } =
       req.body;
-    const userId = req.user._id; 
+      let userId = null;
+      if(req.user.isAdmin){
+          userId =  user_id; 
+      }else{ 
+          userId = req.user._id; 
+      }
 
     // Create a new recycling history record
     const recyclingHistory = new RecyclingHistory({
@@ -202,8 +207,9 @@ const deleteRecyclingHistory = asyncHandler(async (req, res) => {
 // @route    PUT /api/recycle/update/:id
 // @access   Private
 const updateRecyclingHistory = asyncHandler(async (req, res) => {
-  const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
+  const { id, recyclingLocationId, recyclingMethod, quantity, wasteType } =
     req.body;
+
   const recyclingHistory = await RecyclingHistory.findById(req.params.id);
 
   if (recyclingHistory) {
@@ -221,6 +227,37 @@ const updateRecyclingHistory = asyncHandler(async (req, res) => {
     res.status(404).json({ error: "Recycling history not found" });
   }
 });
+
+// @desc     Get All Recycling Histories
+// @route    GET /api/recycle/history
+// @access   Private
+const getAllRecyclingHistories = async (req, res, next) => {
+  try {
+    const recyclingHistories = await RecyclingHistory.find()
+      .populate("user", "name _id")
+      .populate("recyclingLocation", "locationName");
+    const data = recyclingHistories.map((history) => ({
+      id : history._id,
+      user_id: history.user._id,
+      user: history.user.name,
+      recyclingLocationId: history.recyclingLocation._id,
+      recyclingLocation: history.recyclingLocation ? history.recyclingLocation.locationName : "Unknown",
+      recyclingMethod: history.recyclingMethod,
+      wasteType: history.wasteType,
+      quantity: history.quantity,
+      createdAt: history.createdAt,
+      updatedAt: history.updatedAt,
+    }));
+
+    res.json({
+      data: data,
+      page: 1,
+      pages: 1,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 const getRecyclingHistoryByUserIdAndPage = async (req, res) => {
@@ -396,6 +433,7 @@ export {
   getRecyclingLocationsByPage,
   deleteRecyclingLocation,
   updateRecyclingLocation,
+  getAllRecyclingHistories,
   getRecyclingLocationById,
   createRecycle,
   getRecyclingHistoryById,
