@@ -92,6 +92,7 @@ export const getAllUsers = createAsyncThunk("auth/getAllUsers", async ({token, p
     return thunkAPI.rejectWithValue(message);
 
   }
+}
 );
 
 export const logout = createAsyncThunk("auth/logout", async () => {
