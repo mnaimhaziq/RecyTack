@@ -32,16 +32,21 @@ import {
   getRecycleHistoryById,
   updateRecycleHistoryById,
   getRecycleHistoryByUserIdAndPage,
+  getAllRecyclingHistories,
 } from "../features/recycle/recycleFunction/recyclingHistoryFunction";
 import { getAllRecycleLocation } from "../features/recycle/recycleFunction/recycleLocationFunction";
+import { getAllUsers } from "../features/auth/authSlice";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
 import { ToastContainer, toast } from "react-toastify";
+import AggregatedTable from "../components/AggregatedTable";
+import Swal from "sweetalert2";
 
 const RecyclingHistory = () => {
   const [open, setOpen] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const auth = useSelector((state) => state.auth);
@@ -49,7 +54,7 @@ const RecyclingHistory = () => {
   const allRecycleLocations = useSelector(
     (state) => state.recycle.allRecycleLocations
   );
-
+  const AllUsers = useSelector((state) => state.auth.AllUsers);
   const recyclingHistories = useSelector(
     (state) => state.recycle.recyclingHistoriesTop8
   );
@@ -58,11 +63,12 @@ const RecyclingHistory = () => {
   );
 
   const dispatch = useDispatch();
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
+  const isNonMobile = useMediaQuery("(min-width: 942px)");
   const theme = useTheme();
 
   useEffect(() => {
-    dispatch(getAllRecycleLocation(user.token));
+    dispatch(getAllRecycleLocation( user.token));
+    dispatch(getAllUsers(user.token));
     dispatch(
       getRecycleHistoryByUserIdAndPage({
         id: user._id,
@@ -74,6 +80,7 @@ const RecyclingHistory = () => {
   }, [dispatch, user.token, page, user._id, recyclingHistories.pages]);
 
   const handleClickOpen = () => {
+   
     setOpen(true);
   };
 
@@ -92,25 +99,34 @@ const RecyclingHistory = () => {
   };
 
   const handleDelete = async (id) => {
-    if (
-      window.confirm("Are you sure you want to delete this recycling history?")
-    ) {
-      await dispatch(deleteRecycleHistory({ id, token: user.token })).then(
-        () => {
-          dispatch(
-            getRecycleHistoryByUserIdAndPage({
-              id: user._id,
-              page,
-              token: user.token,
-            })
-          );
-        }
-      );
-      toast.error("Recycling Location Has Been Deleted ");
-    }
-  };
+    await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+         dispatch(deleteRecycleHistory({ id, token: user.token })).then(
+          () => {
+            dispatch(
+              getRecycleHistoryByUserIdAndPage({
+                id: user._id,
+                page,
+                token: user.token,
+              })
+            );
+          }
+        );
+        toast.error("Recycling History Has Been Deleted ");
+        }});
+      };
+  
 
   const initialValues = {
+    user_id: user.isAdmin ? "" : user._id,
     recyclingLocationId: "",
     recyclingMethod: "",
     quantity: "",
@@ -118,6 +134,15 @@ const RecyclingHistory = () => {
   };
 
   const validationSchema = Yup.object().shape({
+    user_id: Yup.string().required("This field is Required"),
+    recyclingLocationId: Yup.string().required("This field is Required"),
+    recyclingMethod: Yup.string().required("This field is Required"),
+    quantity: Yup.number()
+      .typeError("Must be a number")
+      .required("This field is Required"),
+  });
+
+  const EditvalidationSchema = Yup.object().shape({
     recyclingLocationId: Yup.string().required("This field is Required"),
     recyclingMethod: Yup.string().required("This field is Required"),
     quantity: Yup.number()
@@ -156,15 +181,18 @@ const RecyclingHistory = () => {
   };
 
   const onSubmit = async (values, { resetForm }) => {
-    const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
+    setIsButtonDisabled(true);
+    const { user_id, recyclingLocationId, recyclingMethod, quantity, wasteType } =
       values;
 
     const newFormData = {
+      user_id,
       recyclingLocationId,
       recyclingMethod,
       quantity: calculateQuantity(quantity, wasteType),
       wasteType,
     };
+   
 
     await dispatch(
       createRecyclingHistory({ newFormData, token: user.token })
@@ -176,13 +204,22 @@ const RecyclingHistory = () => {
           token: user.token,
         })
       );
+    }).then(() => {
+      if(user.isAdmin){
+        dispatch(getAllRecyclingHistories(user.token));
+      }
+      setOpen(false);
+      setIsButtonDisabled(false);
+      toast.success("New Recycling History Created ");
+      resetForm();
     });
-    toast.success("New Recycling History Created ");
-    resetForm();
-    setOpen(false);
+
+   
+    
   };
 
   const onSubmitEdit = async (values, { resetForm }) => {
+    setIsButtonDisabled(true);
     const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
       values;
 
@@ -192,23 +229,26 @@ const RecyclingHistory = () => {
       quantity: calculateQuantity(quantity, wasteType),
       wasteType,
     };
-
-    console.log(newFormData);
     const id = recyclingHistory._id;
 
     await dispatch(
       updateRecycleHistoryById({ id, newFormData, token: user.token })
-    );
-    dispatch(
-      getRecycleHistoryByUserIdAndPage({
-        id: user._id,
-        page,
-        token: user.token,
-      })
-    );
-    toast.success("Recycling History Has Been Edited ");
-    resetForm();
-    setOpenEditDialog(false);
+    ).then(() => {
+      dispatch(
+        getRecycleHistoryByUserIdAndPage({
+          id: user._id,
+          page,
+          token: user.token,
+        })
+      );
+    }).then(() => {
+      setOpenEditDialog(false);  
+      setIsButtonDisabled(false);
+      toast.success("Recycling History Has Been Edited ");
+      resetForm();
+    });
+   
+    
   };
 
   return (
@@ -239,11 +279,12 @@ const RecyclingHistory = () => {
               },
             }}
           >
-            <Add /> Create New Recycling History
+            <Add /> {isNonMobile ? "Create New Recycling History" : "create"}
           </Button>
         </Box>
       </Box>
-      <div>
+
+     <div>
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>Add New Recycling History</DialogTitle>
 
@@ -260,6 +301,30 @@ const RecyclingHistory = () => {
             >
               {({ values, handleChange, handleSubmit, errors, touched }) => (
                 <Form onSubmit={handleSubmit}>
+                  {user.isAdmin && <FormControl fullWidth sx={{ margin: "1rem 0" }}>
+                    <Select
+                      labelId="user"
+                      label="user"
+                      id="user"
+                      name="user_id"
+                      value={values.user_id}
+                      onChange={handleChange}
+                    >
+                      {AllUsers.data
+                        .slice()
+                        .sort((a, b) =>
+                          a.name.localeCompare(b.name)
+                        ) // Sort the options alphabetically
+                        .map((data) => (
+                          <MenuItem key={data._id} value={data._id}>
+                            {data.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    <InputLabel htmlFor="user">
+                      User
+                    </InputLabel>
+                  </FormControl>}
                   <FormControl fullWidth sx={{ margin: "1rem 0" }}>
                     <Select
                       labelId="locationName"
@@ -345,9 +410,9 @@ const RecyclingHistory = () => {
                       sx={{
                         padding: "0.5rem 1rem",
                         color: theme.palette.neutral[1000],
-                        backgroundColor: theme.palette.yellow.main,
+                        backgroundColor: theme.palette.primary.light,
                         "&:hover": {
-                          color: theme.palette.neutral[10],
+                          backgroundColor: theme.palette.primary.main,
                         },
                       }}
                     >
@@ -355,12 +420,13 @@ const RecyclingHistory = () => {
                     </Button>
                     <Button
                       type="submit"
+                      disabled={isButtonDisabled}
                       sx={{
                         padding: "0.5rem 1rem",
                         color: theme.palette.neutral[1000],
-                        backgroundColor: theme.palette.yellow.main,
+                        backgroundColor: theme.palette.primary.light,
                         "&:hover": {
-                          color: theme.palette.neutral[10],
+                          backgroundColor: theme.palette.primary.main,
                         },
                       }}
                     >
@@ -373,7 +439,7 @@ const RecyclingHistory = () => {
           </DialogContent>
         </Dialog>
       </div>
-
+      {user.isAdmin ? <AggregatedTable/> :
       <Paper>
         <TableContainer>
           <Table>
@@ -397,8 +463,8 @@ const RecyclingHistory = () => {
             </TableHead>
             <TableBody>
               {recyclingHistories.data &&
-                recyclingHistories.data.map((row, idx) => (
-                  <TableRow key={row._id}>
+                recyclingHistories.data.map((row, index) => (
+                  <TableRow key={row._id} sx={{backgroundColor: index % 2 !== 0 && theme.palette.neutral[800] }}>
                     {row.recyclingLocation ? (
                       <TableCell>
                         {row.recyclingLocation.locationName }
@@ -409,24 +475,40 @@ const RecyclingHistory = () => {
 
                     <TableCell>{row.recyclingMethod}</TableCell>
                     <TableCell>{row.wasteType}</TableCell>
-                    <TableCell>{row.quantity}</TableCell>
+                    <TableCell>{row.quantity.toFixed(2)}</TableCell>
                     <TableCell>
                       {new Date(row.createdAt).toLocaleString()}
                     </TableCell>
 
                     <TableCell align="right">
-                      <IconButton
-                        aria-label="edit"
-                        onClick={() => handleEdit(row._id)}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => handleDelete(row._id)}
-                      >
-                        <Delete sx={{ color: "#e00a33" }} />
-                      </IconButton>
+                    <IconButton
+                            aria-label="edit"
+                            onClick={() => handleEdit(row._id)}
+                            sx={{
+                              borderRadius: "4px",
+                              backgroundColor: "#007bff",
+                              width: "24px",
+                              height: "24px",
+                              margin: "5px",
+                              padding: "18px",
+                            }}
+                          >
+                            <Edit sx={{ color: "#ffffff" }} />
+                          </IconButton>
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => handleDelete(row._id)}
+                            sx={{
+                              borderRadius: "4px",
+                              backgroundColor: "#e00a33",
+                              width: "24px",
+                              height: "24px",
+                              margin: "5px",
+                              padding: "18px",
+                            }}
+                          >
+                            <Delete sx={{ color: "#ffffff" }} />
+                          </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -447,7 +529,7 @@ const RecyclingHistory = () => {
             showLastButton
           />
         </Box>
-      </Paper>
+      </Paper> }
       <Dialog open={openEditDialog} onClose={handleClose}>
         <DialogTitle>
           Edit Recycling History for{" "}
@@ -471,8 +553,8 @@ const RecyclingHistory = () => {
               ),
               wasteType: recyclingHistory.wasteType,
             }}
-            validationSchema={validationSchema}
-            onSubmit={onSubmitEdit}
+            validationSchema={EditvalidationSchema}
+             onSubmit={onSubmitEdit}
           >
             {({ values, handleChange, handleSubmit, errors, touched }) => (
               <Form onSubmit={handleSubmit}>
@@ -556,33 +638,34 @@ const RecyclingHistory = () => {
                 />
 
                 <DialogActions>
-                  <Button
-                    onClick={handleClose}
-                    sx={{
-                      padding: "0.5rem 1rem",
-                      color: theme.palette.neutral[1000],
-                      backgroundColor: theme.palette.yellow.main,
-                      "&:hover": {
-                        color: theme.palette.neutral[10],
-                      },
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    sx={{
-                      padding: "0.5rem 1rem",
-                      color: theme.palette.neutral[1000],
-                      backgroundColor: theme.palette.yellow.main,
-                      "&:hover": {
-                        color: theme.palette.neutral[10],
-                      },
-                    }}
-                  >
-                    Create
-                  </Button>
-                </DialogActions>
+                    <Button
+                      onClick={handleClose}
+                      sx={{
+                        padding: "0.5rem 1rem",
+                        color: theme.palette.neutral[1000],
+                        backgroundColor: theme.palette.primary.light,
+                        "&:hover": {
+                          backgroundColor: theme.palette.primary.main,
+                        },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isButtonDisabled}
+                      sx={{
+                        padding: "0.5rem 1rem",
+                        color: theme.palette.neutral[1000],
+                        backgroundColor: theme.palette.primary.light,
+                        "&:hover": {
+                          backgroundColor: theme.palette.primary.main,
+                        },
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </DialogActions>
               </Form>
             )}
           </Formik>

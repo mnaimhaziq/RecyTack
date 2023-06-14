@@ -9,6 +9,7 @@ const initialState = {
   isSuccess: false,
   isLoading: false,
   message: "",
+  getUsersByPage: [],
   AllUsers: [] ,
 };
 
@@ -58,10 +59,24 @@ export const updateProfile = createAsyncThunk("auth/updateProfile", async (user,
   }
 });
 
-//Get All Users
-export const getAllUsers = createAsyncThunk("auth/getAllUsers", async ({token, page, search}, thunkAPI) => {
+//Get Users By Page
+export const getUsersByPage = createAsyncThunk("auth/getUsersByPage", async ({token, page, search}, thunkAPI) => {
   try {
-    const users = await authService.getAllUsers(token, page, search);
+    const users = await authService.getUsersByPage(token, page, search);
+    return users;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error;
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
+//Get All Users
+export const getAllUsers = createAsyncThunk("auth/getAllUsers", async (token, thunkAPI) => {
+  try {
+    const users = await authService.getAllUsers(token);
     return users;
   } catch (error) {
     const message =
@@ -159,6 +174,20 @@ export const authSlice = createSlice({
         state.message = action.payload;
         state.user = null;
       })
+      .addCase(getUsersByPage.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getUsersByPage.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.getUsersByPage = action.payload;
+      })
+      .addCase(getUsersByPage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.getUsersByPage = null;
+      })
       .addCase(getAllUsers.pending, (state) => {
         state.isLoading = true;
       })
@@ -175,6 +204,7 @@ export const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+        state.getUsersByPage = [];
         state.AllUsers = []
       }).addCase(updateDarkMode.pending, (state) => {
         state.isLoading = true;

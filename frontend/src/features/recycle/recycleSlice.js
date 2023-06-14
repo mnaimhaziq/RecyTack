@@ -11,6 +11,7 @@ import {
   createRecyclingHistory,
   deleteRecycleHistory,
   getMostRecycledWasteType,
+  getAllRecyclingHistories,
   getRecycleHistoryById,
   getRecycleHistoryByUserIdAndPage,
   getRecyclingPercentagesByUser,
@@ -23,6 +24,7 @@ const initialState = {
   recycleLocations: [],
   recycleLocationById: {},
   recycleHistoryById: {},
+  allRecyclingHistories: [],
   totalRecyclingHistoryByUserId: {},
   recyclingHistoriesTop8: [],
   mostRecycledWasteType: {},
@@ -43,6 +45,7 @@ export const recycleSlice = createSlice({
       state.isSuccess = false;
       state.message = "";
       state.allRecycleLocations =  [];
+      state.allRecyclingHistories = [];
       state.recycleLocationById = {};
       state.error = "";
       state.recycleLocations = [];
@@ -145,6 +148,21 @@ export const recycleSlice = createSlice({
         state.message = action.payload;
       })
       // Recycling History Cases Start Here
+       // Get All Recycle Histories
+       .addCase(getAllRecyclingHistories.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getAllRecyclingHistories.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.allRecyclingHistories = action.payload;
+      })
+      .addCase(getAllRecyclingHistories.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.allRecyclingHistories = null;
+      })
       // Create Recycling History
       .addCase(createRecyclingHistory.pending, (state) => {
         state.isLoading = true;

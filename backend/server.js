@@ -7,6 +7,7 @@ import colors from "colors";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import recycleRoutes from "./routes/recycleRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js"
 import bodyParser from "body-parser";
 
 
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/recycle", recycleRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 const PORT = process.env.PORT || 5001;
 

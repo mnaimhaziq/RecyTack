@@ -85,17 +85,29 @@ const createRecycleCollection = async (newFormData, token) => {
    
   }
 
-    const getRecycleLocationById = async (id, token) => {
+    const getAllRecyclingHistories = async ( token) => {
   
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(API_URL + `location/${id}`, config);
+      const response = await axios.get(API_URL + `getAllRecyclingHistories`, config);
       return response.data; // return the deleted user id to update the Redux store
    
   }
+
+  const getRecycleLocationById = async (id, token) => {
+  
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axios.get(API_URL + `location/${id}`, config);
+    return response.data; // return the deleted user id to update the Redux store
+ 
+}
 
   const getRecycleHistoryById = async (id, token) => {
   
@@ -188,6 +200,7 @@ const getRecyclingPercentagesByUser = async (id, token) => {
    createRecyclingHistory,
    deleteRecycleCollection,
    deleteRecycleHistory,
+   getAllRecyclingHistories,
    getRecycleLocationById,
    getRecycleHistoryById,
    getTotalRecyclingHistoryByUserId,

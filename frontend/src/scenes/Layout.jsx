@@ -7,7 +7,7 @@ import Sidebar from "../components/Sidebar";
 
 
 function Layout() {
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
+  const isNonMobile = useMediaQuery("(min-width: 942px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const auth = useSelector((state) => state.auth);

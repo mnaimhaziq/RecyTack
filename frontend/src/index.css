@@ -26,6 +26,9 @@
   --box-shadow:0 2rem 3rem var(--color-light);
 }
 
+.root{
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;

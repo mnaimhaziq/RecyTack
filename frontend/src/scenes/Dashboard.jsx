@@ -23,7 +23,8 @@ import { DashboardLatestHistory } from "../sections/DashboardLatestHistory";
 
 function Dashboard() {
   const page = 1;
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
+  
+  const isNonMobile = useMediaQuery("(min-width: 942px)");
   const theme = useTheme();
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
@@ -119,7 +120,7 @@ function Dashboard() {
                 chartSeries={chartSeries}
                 labels={labels}
                 sx={{
-                  height: '50vh',
+                  height: '55vh',
                   backgroundColor: theme.palette.background.alt,
                   
                 }}
@@ -132,7 +133,7 @@ function Dashboard() {
                 <DashboardLatestHistory
                   recyclingHistoriesTop8={recyclingHistoriesTop8}
                   sx={{
-                    height: "50vh",
+                    height: isNonMobile ? "55vh" : "65vh%",
                     backgroundColor: theme.palette.background.alt,
                   }}
                 />

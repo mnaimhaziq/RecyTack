@@ -46,6 +46,11 @@ const UserNavItems = [
     icon: <History />,
   },
   {
+    url: "recyclinglocation",
+    text: "Recycling Location",
+    icon: <Domain />,
+  },
+  {
     url: "education",
     text: "Education",
     icon: <Article />,
@@ -132,9 +137,9 @@ function Sidebar({
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
-
   useEffect(() => {
     setActive(pathname.substring(1));
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   
@@ -157,7 +162,7 @@ function Sidebar({
               boxSixing: "border-box",
               borderWidth: isNonMobile ? 0 : "2px",
               width: drawerWidth,
-              zIndex: "1000",
+              zIndex: "1100",
               elevation: 3
             },
           }}
@@ -213,6 +218,9 @@ function Sidebar({
                       onClick={() => {
                         navigate(`/${url}`);
                         setActive(url);
+                        if (!isNonMobile) {
+                          setIsSidebarOpen(!isSidebarOpen);
+                        }
                       }}
                       sx={{
                         backgroundColor:

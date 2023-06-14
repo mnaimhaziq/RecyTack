@@ -45,6 +45,28 @@ export const createRecyclingHistory = createAsyncThunk(
   }
 );
 
+// Get All Recycling Histories
+export const getAllRecyclingHistories = createAsyncThunk(
+  "recycle/getAllRecyclingHistories",
+  async (token, thunkAPI) => {
+    try {
+      const recycleHistories = await recycleService.getAllRecyclingHistories(
+        token
+      );
+      return recycleHistories;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+
 // Get recycle History by id
 export const getRecycleHistoryById = createAsyncThunk(
   "recycle/getRecycleHistoryById",
