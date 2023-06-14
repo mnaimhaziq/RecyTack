@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,35 +10,84 @@ import {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../context/auth";
+import { useDispatch } from "react-redux";
+import { login } from "../features/auth/authSlice";
+import {
+  getRecycleHistoryByUserId,
+  getRecycleHistoryByUserIdAndPage,
+  getMostRecycledWasteType,
+} from "../features/recycle/recycleSlice";
+import { useSelector } from "react-redux";
 
 function Login({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [state, setState] = useContext(AuthContext);
+  //const [state, setState] = useContext(AuthContext);
+  const dispatch = useDispatch();
+
+  const auth = useSelector((state) => state.auth);
+  const { user, isLoading, isSuccess, isError } = auth;
+  console.log(auth);
+
+  const dispatchForDashboard = async () => {
+    await dispatch(
+      getRecycleHistoryByUserIdAndPage({
+        id: user._id,
+        page,
+        token: user.token,
+      })
+    )
+      .then(() => {
+        dispatch(
+          getRecycleHistoryByUserId({ id: user._id, token: user.token })
+        );
+      })
+      .then(() => {
+        dispatch(getMostRecycledWasteType({ id: user._id, token: user.token }));
+      });
+  };
+
+  useEffect(() => {
+    if (isSuccess || user) {
+      dispatchForDashboard();
+      navigation.navigate("Home");
+    }
+
+    if (isError) {
+      alert("Invalid Credentials. ");
+      return;
+    }
+  }, [user, isSuccess, isError, navigation]);
 
   const handleSubmit = async () => {
     if (email === "" || password === "") {
       alert("All fields are required");
       return;
+    } else {
+      const userData = {
+        email,
+        password,
+      };
+      await dispatch(login(userData));
     }
 
-    try {
-      console.log(email, password);
-      const resp = await axios.post(
-        "http://10.167.67.184:5000/api/users/login",
-        {
-          email,
-          password,
-        }
-      );
-      console.log(resp.data);
-      setState(resp.data);
-      await AsyncStorage.setItem("auth-rn", JSON.stringify(resp.data));
-      alert("Sign In Successfull");
-      navigation.navigate("Home");
-    } catch (error) {
-      console.log(error);
-    }
+    // try {
+    //   console.log(email, password);
+    //   const resp = await axios.post(
+    //     "http://10.167.120.132:5000/api/users/login",
+    //     {
+    //       email,
+    //       password,
+    //     }
+    //   );
+    //   console.log(resp.data);
+    //   setState(resp.data);
+    //   await AsyncStorage.setItem("auth-rn", JSON.stringify(resp.data));
+    //   alert("Sign In Successfull");
+    //   navigation.navigate("Home");
+    // } catch (error) {
+    //   console.log(error);
+    // }
 
     // if (resp.data.error){
     //   alert(resp.data.error)
@@ -50,7 +99,7 @@ function Login({ navigation }) {
   };
 
   return (
-    <View style={{ padding: 20, top: 0 }}>
+    <View style={{ padding: 20, top: 0, backgroundColor: "verylightgrey" }}>
       <View style={{ alignItems: "center" }}>
         <Text style={styles.loginText}>Login here</Text>
         <Text style={styles.welcomeText}>Welcome back you've been missed!</Text>
