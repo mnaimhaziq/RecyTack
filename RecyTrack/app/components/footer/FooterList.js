@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import FooterItem from "./FooterItem";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { FontAwesome } from "@expo/vector-icons";
 
 const FooterList = () => {
   const navigation = useNavigation();
@@ -17,13 +18,18 @@ const FooterList = () => {
       />
       <FooterItem
         text="RecyclingHistory"
-        name="history"
+        name="recycle"
         handlePress={() => navigation.navigate("Recycling")}
         routeName={route.name}
       />
       <FooterItem text="Education" name="library-books" />
       <FooterItem text="Leaderboard" name="leaderboard" />
-      <FooterItem text="Account" name="account-circle" />
+      <FooterItem
+        text="Account"
+        name="account-circle"
+        handlePress={() => navigation.navigate("Account")}
+        routeName={route.name}
+      />
     </View>
   );
 };

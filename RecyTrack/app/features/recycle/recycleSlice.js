@@ -61,7 +61,7 @@ export const getAllRecycleLocation = createAsyncThunk(
 
 
 //Create recycle collection
-export const createRecycleCollection = createAsyncThunk(
+export const createRecycleLocation = createAsyncThunk(
   "recycle/createRecycleCollection",
   async ({ newFormData, token }, thunkAPI) => {
     try {
@@ -105,7 +105,7 @@ export const createRecyclingHistory = createAsyncThunk(
 );
 
 //Delete recycle collection
-export const deleteRecycleCollection = createAsyncThunk(
+export const deleteRecycleLocation = createAsyncThunk(
   "recycle/deleteRecycleCollection",
   async ({ id, token }, thunkAPI) => {
     try {
@@ -360,14 +360,15 @@ export const recycleSlice = createSlice({
           state.recycleLocations = null;
         }
       )
-      .addCase(createRecycleCollection.pending, (state) => {
+      // Create Recycle Location
+      .addCase(createRecycleLocation.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(createRecycleCollection.fulfilled, (state, action) => {
+      .addCase(createRecycleLocation.fulfilled, (state) => {
         state.isLoading = false;
         state.isSuccess = true;
       })
-      .addCase(createRecycleCollection.rejected, (state, action) => {
+      .addCase(createRecycleLocation.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
@@ -384,17 +385,18 @@ export const recycleSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
-      .addCase(deleteRecycleCollection.pending, (state) => {
+      //Delete RecycleLocation
+      .addCase(deleteRecycleLocation.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(deleteRecycleCollection.fulfilled, (state, action) => {
+      .addCase(deleteRecycleLocation.fulfilled, (state) => {
         state.isLoading = false;
         state.isSuccess = true;
       })
-      .addCase(deleteRecycleCollection.rejected, (state, action) => {
+      .addCase(deleteRecycleLocation.rejected, (state) => {
         state.isLoading = false;
         state.isError = true;
-      }) 
+      })
       .addCase(deleteRecycleHistory.pending, (state) => {
         state.isLoading = true;
       })

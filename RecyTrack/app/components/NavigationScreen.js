@@ -2,12 +2,14 @@ import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthContext } from "../context/auth";
 import HeaderTabs from "./header/HeaderTabs";
+import { useSelector } from "react-redux";
 
 import Login from "../screens/Login";
 import Register from "../screens/Register";
 import Home from "../screens/Home";
 import Recycling from "../screens/Recycling";
-import { useSelector } from "react-redux";
+import Account from "../screens/Account";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +32,7 @@ const NavigationScreen = () => {
             options={{ headerRight: () => <HeaderTabs /> }}
           />
           <Stack.Screen name="Recycling" component={Recycling} />
+          <Stack.Screen name="Account" component={Account} />
         </>
       ) : (
         <>

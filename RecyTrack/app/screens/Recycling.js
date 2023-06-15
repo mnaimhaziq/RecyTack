@@ -7,6 +7,8 @@ import {
   TextInput,
   TouchableOpacityComponent,
   TouchableWithoutFeedback,
+  Linking,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -28,6 +30,9 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { Toast } from "react-native-toast-message/lib/src/Toast";
 import { Select } from "native-base";
+import { TabView, TabBar } from "react-native-tab-view";
+import { openMap, createOpenLink } from "react-native-open-maps";
+import { ScrollView } from "react-native-web";
 
 import {
   getAllRecycleLocation,
@@ -37,16 +42,40 @@ import {
   getRecycleHistoryById,
   updateRecycleHistoryById,
   getRecycleHistoryByUserIdAndPage,
+  getAllRecycleLocationByPageAndKeyword,
+  getRecycleLocationById,
+  updateRecycleLocationById,
+  createRecycleLocation,
+  deleteRecycleLocation,
 } from "../features/recycle/recycleSlice";
 
 const Recycling = () => {
+  //------------------------------------------------------------RECYCLING HISTORY--------------------------------------------------------------
+
   const [open, setOpen] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [recyclingHistoryId, setRecyclingHistoryId] = useState("")
   const [selectedRow, setSelectedRow] = useState(null);
   const [visible, setVisible] = useState(false);
+
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    { key: "history", title: "History" },
+    { key: "location", title: "Location" },
+  ]);
+
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case "history":
+        return renderHistoryTab();
+      case "location":
+        return renderLocationTab();
+      default:
+        return null;
+    }
+  };
 
   const auth = useSelector((state) => state.auth);
   const { user } = auth;
@@ -107,6 +136,7 @@ const Recycling = () => {
   const handleEdit = async (id) => {
     await dispatch(getRecycleHistoryById({ id, token: user.token }));
     setOpenEditDialog(true);
+    setRecyclingHistoryId(id);
   };
 
   const handleDelete = async (id) => {
@@ -145,27 +175,6 @@ const Recycling = () => {
     wasteType: "",
   });
 
-  const handleChanges = (field, value) => {
-    setValues((prevState) => ({
-      ...prevState,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = () => {
-    // Perform form submission logic
-    // You can access the form values from the 'values' state
-    console.log("Form values:", values);
-  };
-
-  const validationSchema = Yup.object().shape({
-    recyclingLocationId: Yup.string().required("This field is Required"),
-    recyclingMethod: Yup.string().required("This field is Required"),
-    quantity: Yup.number()
-      .typeError("Must be a number")
-      .required("This field is Required"),
-  });
-
   const calculateQuantity = (quantity, wasteType) => {
     let conversionFactor;
 
@@ -197,15 +206,13 @@ const Recycling = () => {
   };
 
   const onSubmit = async (values) => {
-    const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
-      values;
-
     const newFormData = {
-      recyclingLocationId,
-      recyclingMethod,
-      quantity: calculateQuantity(quantity, wasteType),
-      wasteType,
+      recyclingLocationId: values.recyclingLocationId,
+      recyclingMethod: values.recyclingMethod,
+      quantity: calculateQuantity(values.quantity, values.wasteType),
+      wasteType: values.wasteType,
     };
+    console.log(newFormData);
 
     await dispatch(
       createRecyclingHistory({ newFormData, token: user.token })
@@ -222,20 +229,20 @@ const Recycling = () => {
       type: "success",
       text1: "New Recycling History has been created",
     });
-    resetForm();
+    // resetForm();
     setOpen(false);
   };
 
-  const onSubmitEdit = async (values, { resetForm }) => {
-    const { recyclingLocationId, recyclingMethod, quantity, wasteType } =
-      values;
-
+  const onSubmitEdit = async (values) => {
     const newFormData = {
-      recyclingLocationId,
-      recyclingMethod,
-      quantity: calculateQuantity(quantity, wasteType),
-      wasteType,
+      recyclingHistoryId: recyclingHistoryId,
+      recyclingLocationId: values.recyclingLocationId,
+      recyclingMethod: values.recyclingMethod,
+      quantity: calculateQuantity(values.quantity, values.wasteType),
+      wasteType: values.wasteType,
     };
+
+    console.log(newFormData);
 
     const id = recyclingHistory._id;
 
@@ -249,219 +256,784 @@ const Recycling = () => {
         token: user.token,
       })
     );
-    toast.success("Recycling History Has Been Edited ");
-    resetForm();
+    Toast.show({
+      type: "success",
+      text1: "Recycling History has been edited",
+    });
     setOpenEditDialog(false);
   };
 
-
-
   const [selectedValue, setSelectedValue] = useState("");
+
+  const renderHistoryTab = () => {
+    // Existing code here
+    return (
+      <View style={styles.container}>
+        {/* Existing code for history tab */}
+        <Provider>
+          <Portal>
+            <View style={styles.headerContainer}>
+              <View style={styles.buttonContainer}>
+                <Button style={styles.createButton} onPress={handleClickOpen}>
+                  Create new recycling history
+                </Button>
+              </View>
+            </View>
+
+            {/* Render the Add Dialog */}
+
+            {open && (
+              <View style={styles.overlay}>
+                {/* Render the Dialog here */}
+                <Dialog visible={open} onClose={handleClose}>
+                  <Dialog.Title>Add New Recycling History</Dialog.Title>
+                  <Dialog.Content>
+                    <Text style={styles.label}>Recycling Location</Text>
+                    <Picker
+                      selectedValue={values.recyclingLocationId}
+                      onValueChange={(itemValue) =>
+                        setValues((prevState) => ({
+                          ...prevState,
+                          recyclingLocationId: itemValue,
+                        }))
+                      }
+                    >
+                      {recycleLocations.data
+                        .slice()
+                        .sort((a, b) =>
+                          a.locationName.localeCompare(b.locationName)
+                        )
+                        .map((data) => (
+                          <Picker.Item
+                            key={data._id}
+                            label={data.locationName}
+                            value={data._id}
+                          />
+                        ))}
+                    </Picker>
+                    <Text style={styles.label}>Recycling Method</Text>
+                    <Picker
+                      selectedValue={values.recyclingMethod}
+                      onValueChange={(itemValue) =>
+                        setValues((prevState) => ({
+                          ...prevState,
+                          recyclingMethod: itemValue,
+                        }))
+                      }
+                    >
+                      <Picker.Item
+                        label="Curbside Recycling"
+                        value="curbside"
+                      />
+                      <Picker.Item
+                        label="Drop-off Recycling"
+                        value="drop-off"
+                      />
+                      <Picker.Item label="Composting" value="composting" />
+                      <Picker.Item
+                        label="E-waste Recycling"
+                        value="E-waste Recycling"
+                      />
+                    </Picker>
+                    <Text style={styles.label}>Waste Type</Text>
+                    <Picker
+                      selectedValue={values.wasteType}
+                      onValueChange={(itemValue) =>
+                        setValues((prevState) => ({
+                          ...prevState,
+                          wasteType: itemValue,
+                        }))
+                      }
+                    >
+                      <Picker.Item label="Plastic" value="Plastic" />
+                      <Picker.Item label="Paper" value="Paper" />
+                      <Picker.Item label="Glass" value="Glass" />
+                      <Picker.Item label="Metal" value="Metal" />
+                      <Picker.Item label="Bottle" value="Bottle" />
+                      <Picker.Item label="Can" value="Can" />
+                    </Picker>
+                    <Text style={styles.label}>Quantity</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={values.quantity}
+                      onChangeText={(text) =>
+                        setValues({ ...values, quantity: text })
+                      }
+                    />
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button onPress={handleClose}>Cancel</Button>
+                    <Button onPress={() => onSubmit(values)}>Create</Button>
+                  </Dialog.Actions>
+                </Dialog>
+              </View>
+            )}
+
+            {/* Render the Edit Dialog */}
+
+            {openEditDialog && (
+              <View style={styles.overlay}>
+                {/* Render the Dialog here */}
+                <Dialog visible={openEditDialog} onClose={handleClose}>
+                  <Dialog.Title>
+                    Edit Recycling History for{" "}
+                    {new Date(recyclingHistory.createdAt).toLocaleString()}
+                  </Dialog.Title>
+                  <Dialog.Content>
+                    <Text style={styles.label}>Recycling Location</Text>
+                    <Picker
+                      selectedValue={values.recyclingLocationId}
+                      onValueChange={(itemValue) =>
+                        setValues((prevState) => ({
+                          ...prevState,
+                          recyclingLocationId: itemValue,
+                        }))
+                      }
+                    >
+                      {recycleLocations.data
+                        .slice()
+                        .sort((a, b) =>
+                          a.locationName.localeCompare(b.locationName)
+                        )
+                        .map((data) => (
+                          <Picker.Item
+                            key={data._id}
+                            label={data.locationName}
+                            value={data._id}
+                          />
+                        ))}
+                    </Picker>
+                    <Text style={styles.label}>Recycling Method</Text>
+                    <Picker
+                      selectedValue={values.recyclingMethod}
+                      onValueChange={(itemValue) =>
+                        setValues((prevState) => ({
+                          ...prevState,
+                          recyclingMethod: itemValue,
+                        }))
+                      }
+                    >
+                      <Picker.Item
+                        label="Curbside Recycling"
+                        value="curbside"
+                      />
+                      <Picker.Item
+                        label="Drop-off Recycling"
+                        value="drop-off"
+                      />
+                      <Picker.Item label="Composting" value="composting" />
+                      <Picker.Item
+                        label="E-waste Recycling"
+                        value="E-waste Recycling"
+                      />
+                    </Picker>
+                    <Text style={styles.label}>Waste Type</Text>
+                    <Picker
+                      selectedValue={values.wasteType}
+                      onValueChange={(itemValue) =>
+                        setValues((prevState) => ({
+                          ...prevState,
+                          wasteType: itemValue,
+                        }))
+                      }
+                    >
+                      <Picker.Item label="Plastic" value="Plastic" />
+                      <Picker.Item label="Paper" value="Paper" />
+                      <Picker.Item label="Glass" value="Glass" />
+                      <Picker.Item label="Metal" value="Metal" />
+                      <Picker.Item label="Bottle" value="Bottle" />
+                      <Picker.Item label="Can" value="Can" />
+                    </Picker>
+                    <Text style={styles.label}>Quantity</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={values.quantity}
+                      onChangeText={(text) =>
+                        setValues({ ...values, quantity: text })
+                      }
+                    />
+                    {/* {setValues({ ...values, id: recyclingHistory._id})} */}
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button onPress={handleClose}>Cancel</Button>
+                    <Button onPress={() => onSubmitEdit(values)}>
+                      Confirm
+                    </Button>
+                  </Dialog.Actions>
+                </Dialog>
+              </View>
+            )}
+
+            {/* DATA TABLE */}
+
+            <DataTable>
+              <DataTable.Header>
+                <DataTable.Title style={styles.longCell}>
+                  Location
+                </DataTable.Title>
+                <DataTable.Title style={styles.longCell}>
+                  Method
+                </DataTable.Title>
+                <DataTable.Title style={styles.shortCell}>Type</DataTable.Title>
+              </DataTable.Header>
+
+              {recyclingHistories.data &&
+                recyclingHistories.data.map((row, idx) => (
+                  <React.Fragment key={row._id}>
+                    <DataTable.Row onPress={() => handleInfoButtonPress(row)}>
+                      <DataTable.Cell style={styles.longCell}>
+                        {row.recyclingLocation
+                          ? row.recyclingLocation.locationName
+                          : "null"}
+                      </DataTable.Cell>
+                      <DataTable.Cell style={styles.longCell}>
+                        {row.recyclingMethod}
+                      </DataTable.Cell>
+                      <DataTable.Cell style={styles.shortCell}>
+                        {row.wasteType}
+                      </DataTable.Cell>
+                    </DataTable.Row>
+                  </React.Fragment>
+                ))}
+
+              <DataTable.Pagination
+                count={totalPages}
+                page={page}
+                onPageChange={handlePageChange}
+                siblingCount={1}
+                showFirstButton
+                showLastButton
+              />
+            </DataTable>
+
+            {/* Render the Modal */}
+
+            <Modal
+              visible={visible}
+              onDismiss={handleCloseModal}
+              contentContainerStyle={styles.modalContainer}
+            >
+              <Text>Full Recycling History Information</Text>
+              <Text>
+                Recycling Location:{" "}
+                {selectedRow && selectedRow.recyclingLocation.locationName}
+              </Text>
+              <Text>
+                Recycling Method: {selectedRow && selectedRow.recyclingMethod}
+              </Text>
+              <Text>
+                Recycling Waste Type: {selectedRow && selectedRow.wasteType}
+              </Text>
+              <Text>Quantity: {selectedRow && selectedRow.quantity}</Text>
+              <Text>
+                Created at:{" "}
+                {selectedRow &&
+                  new Date(selectedRow.createdAt).toLocaleString()}
+              </Text>
+
+              <View style={styles.modalButtonContainer}>
+                <Button
+                  style={styles.modalButton}
+                  onPress={() => handleEdit(selectedRow && selectedRow._id)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  style={styles.modalButton}
+                  onPress={() => handleDelete(selectedRow && selectedRow._id)}
+                >
+                  Delete
+                </Button>
+              </View>
+            </Modal>
+          </Portal>
+        </Provider>
+      </View>
+    );
+  };
+
+  //------------------------------------------------------------RECYCLING LOCATION--------------------------------------------------------------
+
+  const [openLocation, setOpenLocation] = useState(false);
+  const [openEditDialogLocation, setOpenEditDialogLocation] = useState(false);
+  const [pageLocation, setPageLocation] = useState(0);
+  const [numberOfItemsPerPage, setNumberOfItemsPerPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [totalPagesLocation, setTotalPagesLocation] = useState(1);
+  const [selectedRowLocation, setSelectedRowLocation] = useState(null);
+  const [visibleLocation, setVisibleLocation] = useState(false);
+
+  const numberOfItemsPerPageList = [2, 3, 4];
+
+  const [malaysiaStates, setMalaysiaStates] = useState([
+    "Johor",
+    "Kedah",
+    "Kelantan",
+    "Kuala Lumpur",
+    "Labuan",
+    "Melaka",
+    "Negeri Sembilan",
+    "Pahang",
+    "Perak",
+    "Perlis",
+    "Pulau Pinang",
+    "Putrajaya",
+    "Sabah",
+    "Sarawak",
+    "Selangor",
+    "Terengganu",
+  ]);
+
+  const items = [
+    {
+      key: 1,
+      name: "Page 1",
+    },
+    {
+      key: 2,
+      name: "Page 2",
+    },
+    {
+      key: 3,
+      name: "Page 3",
+    },
+  ];
+
+  const from = pageLocation * numberOfItemsPerPage;
+  const to = Math.min((pageLocation + 1) * numberOfItemsPerPage, items.length);
+
+  // const allRecycleLocations = useSelector(
+  //   (state) => state.recycle.allRecycleLocations.data
+  // );
+
+  const recycleLocation = useSelector(
+    (state) => state.recycle.recycleLocationById
+  );
+
+  const initialValuesLocation = {
+    locationName: "",
+    street: "",
+    city: "",
+    postalCode: "",
+    state: "",
+    country: "",
+    contactNumber: "",
+    latitude: "",
+    longitude: "",
+  };
+
+  const [valuesLocation, setValuesLocation] = useState({
+    locationName: "",
+    street: "",
+    city: "",
+    postalCode: "",
+    state: "",
+    country: "Malaysia",
+    contactNumber: "",
+    latitude: "",
+    longitude: "",
+  });
+
+  useEffect(() => {
+    setPageLocation(0);
+  }, [numberOfItemsPerPage]);
+
+  useEffect(() => {
+    dispatch(getAllRecycleLocation(user.token));
+    dispatch(
+      getAllRecycleLocationByPageAndKeyword({
+        token: user.token,
+        pageLocation,
+        search,
+      })
+    );
+    setTotalPages(recycleLocations.pages);
+  }, [dispatch, user.token, pageLocation, recycleLocations.pages, search]);
+
+  const handleClickOpenLocation = () => {
+    setOpenLocation(true);
+  };
+
+  const handleCloseLocation = () => {
+    setOpenLocation(false);
+    setOpenEditDialogLocation(false);
+  };
+
+  const handlePageChangeLocation = (page) => {
+    setPageLocation(page);
+    console.log("Page changed:", page);
+  };
+
+  const handleItemsPerPageChange = (value) => {
+    setNumberOfItemsPerPage(value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+    setPageLocation(1);
+  };
+
+  const handleShowModalLocation = () => {
+    setVisibleLocation(true);
+  };
+
+  const handleCloseModalLocation = () => {
+    setVisibleLocation(false);
+  };
+
+  const handleInfoButtonPressLocation = (row) => {
+    setSelectedRowLocation(row);
+    console.log(row); // Add this console log to check the row data
+    handleShowModalLocation();
+  };
+
+  const openMap = (latitude, longitude) => {
+    const location = `${latitude},${longitude}`;
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${location}`;
+    Linking.openURL(mapUrl);
+  };
+
+  const onSubmitLocation = async (valuesLocation) => {
+    const newFormData = {
+      locationName: valuesLocation.locationName,
+      contactNumber: valuesLocation.contactNumber,
+      latitude: valuesLocation.latitude,
+      longitude: valuesLocation.longitude,
+      address: {
+        street: valuesLocation.street,
+        city: valuesLocation.city,
+        postalCode: valuesLocation.postalCode,
+        state: valuesLocation.state,
+        country: valuesLocation.country,
+      },
+    };
+
+    console.log(newFormData);
+
+    await dispatch(createRecycleLocation({ newFormData, token: user.token }))
+      .then(() => {
+        dispatch(
+          getAllRecycleLocationByPageAndKeyword({
+            token: user.token,
+            page,
+            search,
+          })
+        );
+      })
+      .then(() => {
+        dispatch(getAllRecycleLocation(user.token));
+      });
+    Toast.show({
+      type: "success",
+      text1: "New Recycling Location has been created",
+    });
+    setOpenLocation(false);
+  };
+
+  const handleDeleteLocation = async (id) => {
+    if (window.confirm("Are you sure you want to delete this location?")) {
+      await dispatch(deleteRecycleLocation({ id, token: user.token }))
+        .then(() => {
+          dispatch(
+            getAllRecycleLocationByPageAndKeyword({
+              token: user.token,
+              page,
+              search,
+            })
+          );
+        })
+        .then(() => {
+          dispatch(getAllRecycleLocation(user.token));
+        });
+      Toast.show({
+        type: "success",
+        text1: "Recycling Location has been deleted",
+      });
+      setVisibleLocation(false);
+    }
+  };
+
+  const renderLocationTab = () => {
+    return (
+      <View style={styles.container}>
+        <Provider>
+          <Portal>
+            {user.isAdmin ? (
+              <View>
+                <Button
+                  style={styles.createButton}
+                  onPress={handleClickOpenLocation}
+                >
+                  Create new Recycling Location
+                </Button>
+              </View>
+            ) : (
+              <Text></Text>
+            )}
+            <DataTable>
+              <DataTable.Header>
+                <DataTable.Title style={styles.longCell}>Name</DataTable.Title>
+                <DataTable.Title style={styles.longCell}>
+                  Address
+                </DataTable.Title>
+                <DataTable.Title style={styles.shortCell}>
+                  Contact
+                </DataTable.Title>
+              </DataTable.Header>
+
+              {recycleLocations.data &&
+                recycleLocations.data.map((row) => (
+                  <React.Fragment key={row._id}>
+                    <DataTable.Row
+                      onPress={() => handleInfoButtonPressLocation(row)}
+                    >
+                      <DataTable.Cell style={styles.longCell}>
+                        {row.locationName}
+                      </DataTable.Cell>
+                      <DataTable.Cell style={styles.longCell}>
+                        `${row.address.street}, ${row.address.city}, $
+                        {row.address.postalCode}, ${row.address.state}, $
+                        {row.address.country}`
+                      </DataTable.Cell>
+                      <DataTable.Cell style={styles.shortCell}>
+                        {row.contactNumber}
+                      </DataTable.Cell>
+                    </DataTable.Row>
+                  </React.Fragment>
+                ))}
+
+              <DataTable.Pagination
+                page={pageLocation}
+                numberOfPages={Math.ceil(items.length / numberOfItemsPerPage)}
+                onPageChange={handlePageChangeLocation}
+                label={`${from + 1}-${to} of ${items.length}`}
+                showFastPaginationControls
+                numberOfItemsPerPageList={numberOfItemsPerPageList}
+                numberOfItemsPerPage={numberOfItemsPerPage}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
+            </DataTable>
+
+            {/* Render the Modal */}
+
+            <Modal
+              visible={visibleLocation}
+              onDismiss={handleCloseModalLocation}
+              contentContainerStyle={styles.modalContainer}
+            >
+              <View style={styles.modalContent}>
+                <Text>Full Recycling Location Information</Text>
+                <Text>Recycling Location: </Text>
+                <Text>
+                  {selectedRowLocation && selectedRowLocation.locationName}
+                </Text>
+                <Text>Address: </Text>
+                <Text>
+                  {selectedRowLocation && selectedRowLocation.address.street},{" "}
+                  {selectedRowLocation && selectedRowLocation.address.city},
+                  {selectedRowLocation &&
+                    selectedRowLocation.address.postalCode}
+                  , {selectedRowLocation && selectedRowLocation.address.state},
+                  {selectedRowLocation && selectedRowLocation.address.country}
+                </Text>
+                <Text>
+                  Contact Number:{" "}
+                  {selectedRowLocation && selectedRowLocation.contactNumber}
+                </Text>
+                <Text>
+                  Latitude:{" "}
+                  {selectedRowLocation && selectedRowLocation.latitude}
+                </Text>
+                <Text>
+                  Longitude:{" "}
+                  {selectedRowLocation && selectedRowLocation.longitude}
+                </Text>
+              </View>
+
+              <View>
+                {user.isAdmin ? (
+                  <View style={styles.modalLocationActions}>
+                    <Button>Edit</Button>
+                    <Button
+                      onPress={() =>
+                        handleDeleteLocation(
+                          selectedRowLocation && selectedRowLocation._id
+                        )
+                      }
+                    >
+                      Delete
+                    </Button>
+                  </View>
+                ) : (
+                  <View style={styles.modalLocationActions}>
+                    <Button
+                      onPress={() =>
+                        openMap(
+                          selectedRowLocation?.latitude,
+                          selectedRowLocation?.longitude
+                        )
+                      }
+                    >
+                      Open in Maps
+                    </Button>
+                  </View>
+                )}
+              </View>
+            </Modal>
+
+            {/* Add Location Dialog */}
+
+            {openLocation && (
+              <Dialog
+                visible={openLocation}
+                onClose={handleCloseLocation}
+                style={styles.dialog}
+              >
+                <Dialog.Title>Add New Recycling Location</Dialog.Title>
+                <Dialog.ScrollArea>
+                  <ScrollView>
+                    <Dialog.Content>
+                      <Text style={styles.label}>Recycling Location Name</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.locationName}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            locationName: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>Street Address</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.street}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            street: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>City</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.city}
+                        onChangeText={(text) =>
+                          setValuesLocation({ ...valuesLocation, city: text })
+                        }
+                      />
+                      <Text style={styles.label}>Postal Code</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.postalCode}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            postalCode: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>State</Text>
+                      <Picker
+                        selectedValue={valuesLocation.state}
+                        onValueChange={(itemValue) =>
+                          setValuesLocation((prevState) => ({
+                            ...prevState,
+                            state: itemValue,
+                          }))
+                        }
+                      >
+                        {malaysiaStates.map((state) => (
+                          <Picker.Item
+                            key={state}
+                            value={state}
+                            label={state}
+                            color="#000000"
+                          >
+                            {state}
+                          </Picker.Item>
+                        ))}
+                      </Picker>
+                      <Text style={styles.label}>Country</Text>
+                      <Picker
+                        selectedValue={valuesLocation.country}
+                        onValueChange={(itemValue) =>
+                          setValuesLocation((prevState) => ({
+                            ...prevState,
+                            country: itemValue,
+                          }))
+                        }
+                      >
+                        <Picker.Item label="Malaysia" value="Malaysia" />
+                      </Picker>
+                      <Text style={styles.label}>Contact Number</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.contactNumber}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            contactNumber: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>Latitude</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.latitude}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            latitude: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>Longitude</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.longitude}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            longitude: text,
+                          })
+                        }
+                      />
+                    </Dialog.Content>
+                  </ScrollView>
+                </Dialog.ScrollArea>
+                <Dialog.Actions>
+                  <Button onPress={handleCloseLocation}>Cancel</Button>
+                  <Button onPress={() => onSubmitLocation(valuesLocation)}>
+                    Create
+                  </Button>
+                </Dialog.Actions>
+              </Dialog>
+            )}
+          </Portal>
+        </Provider>
+      </View>
+    );
+  };
+
+  const renderTabBar = (props) => (
+    <TabBar
+      {...props}
+      indicatorStyle={styles.tabIndicator}
+      style={styles.tabBar}
+      labelStyle={styles.tabLabel}
+    />
+  );
 
   return (
     <View style={styles.container}>
-      <Provider>
-        <Portal>
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerText}>RECYCLING HISTORY</Text>
-            <View style={styles.buttonContainer}>
-              <Button style={styles.createButton} onPress={handleClickOpen}>
-                Create
-              </Button>
-            </View>
-          </View>
-
-          {/* Render the Dialog */}
-
-          {open && (
-            <View style={styles.overlay}>
-              {/* Render the Dialog here */}
-              <Dialog visible={open} onClose={handleClose}>
-                <Dialog.Title>Add New Recycling History</Dialog.Title>
-                <Dialog.Content>
-                  <Formik
-                    initialValues={initialValues}
-                    validationSchema={validationSchema}
-                    onSubmit={onSubmit}
-                  >
-                    {({
-                      values,
-                      handleChange,
-                      handleSubmit,
-                      errors,
-                      touched,
-                    }) => (
-                      <View style={styles.container}>
-                        <View style={styles.formControl}>
-                          <Picker
-                            selectedValue={values.recyclingLocationId}
-                            onValueChange={handleChange}
-                          >
-                            {recycleLocations.data
-                              .slice()
-                              .sort((a, b) =>
-                                a.locationName.localeCompare(b.locationName)
-                              )
-                              .map((data) => (
-                                <Picker.Item
-                                  key={data._id}
-                                  label={data.locationName}
-                                  value={data._id}
-                                />
-                              ))}
-                          </Picker>
-                          <Text style={styles.label}>Recycling Location</Text>
-                        </View>
-
-                        <View style={styles.formControl}>
-                          <Picker
-                            selectedValue={values.recyclingMethod}
-                            onValueChange={handleChange}
-                          >
-                            <Picker.Item
-                              label="Curbside Recycling"
-                              value="curbside"
-                            />
-                            <Picker.Item
-                              label="Drop-off Recycling"
-                              value="drop-off"
-                            />
-                            <Picker.Item
-                              label="Composting"
-                              value="composting"
-                            />
-                            <Picker.Item
-                              label="E-waste Recycling"
-                              value="E-waste Recycling"
-                            />
-                          </Picker>
-                          <Text style={styles.label}>Recycling Method</Text>
-                        </View>
-
-                        <View style={styles.formControl}>
-                          <Picker
-                            selectedValue={values.wasteType}
-                            onValueChange={(value) =>
-                              handleChange("wasteType", value)
-                            }
-                          >
-                            <Picker.Item label="Plastic" value="Plastic" />
-                            <Picker.Item label="Paper" value="Paper" />
-                            <Picker.Item label="Glass" value="Glass" />
-                            <Picker.Item label="Metal" value="Metal" />
-                            <Picker.Item label="Bottle" value="Bottle" />
-                            <Picker.Item label="Can" value="Can" />
-                          </Picker>
-                          <Text style={styles.label}>Waste Type</Text>
-                        </View>
-
-                        <TextInput
-                          label="Quantity"
-                          onChangeText={(value) =>
-                            handleChange("quantity", value)
-                          }
-                          value={values.quantity}
-                          style={styles.formControl}
-                        />
-
-                        <View style={styles.dialogActions}>
-                          <TouchableOpacity
-                            onPress={handleClose}
-                            style={[styles.button, styles.cancelButton]}
-                          >
-                            <Text style={styles.buttonText}>Cancel</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={handleSubmit}
-                            style={[styles.button, styles.createButton]}
-                          >
-                            <Text style={styles.buttonText}>Create</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    )}
-                  </Formik>
-                </Dialog.Content>
-                <Dialog.Actions></Dialog.Actions>
-              </Dialog>
-            </View>
-          )}
-
-          
-          <DataTable>
-            <DataTable.Header>
-              <DataTable.Title style={styles.longCell}>
-                Location
-              </DataTable.Title>
-              <DataTable.Title style={styles.longCell}>Method</DataTable.Title>
-              <DataTable.Title style={styles.shortCell}>Type</DataTable.Title>
-              {/* <DataTable.Title style={styles.shortCell} numeric>
-            Quantity(kg)
-          </DataTable.Title> */}
-              {/* <DataTable.Title>Create At</DataTable.Title> */}
-            </DataTable.Header>
-
-            {recyclingHistories.data &&
-              recyclingHistories.data.map((row, idx) => (
-                <React.Fragment key={row._id}>
-                  <DataTable.Row onPress={() => handleInfoButtonPress(row)}>
-                    <DataTable.Cell style={styles.longCell}>
-                      {row.recyclingLocation
-                        ? row.recyclingLocation.locationName
-                        : "null"}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.longCell}>
-                      {row.recyclingMethod}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.shortCell}>
-                      {row.wasteType}
-                    </DataTable.Cell>
-                  </DataTable.Row>
-                </React.Fragment>
-              ))}
-
-            <DataTable.Pagination
-              count={totalPages}
-              page={page}
-              onPageChange={handlePageChange}
-              siblingCount={1}
-              showFirstButton
-              showLastButton
-            />
-          </DataTable>
-
-          {/* Render the Modal */}
-
-          <Modal
-            visible={visible}
-            onDismiss={handleCloseModal}
-            contentContainerStyle={styles.modalContainer}
-          >
-            <Text>Full Recycling History Information</Text>
-            <Text>
-              Recycling Location:{" "}
-              {selectedRow && selectedRow.recyclingLocation.locationName}
-            </Text>
-            <Text>
-              Recycling Method: {selectedRow && selectedRow.recyclingMethod}
-            </Text>
-            <Text>
-              Recycling Waste Type: {selectedRow && selectedRow.wasteType}
-            </Text>
-            <Text>Quantity: {selectedRow && selectedRow.quantity}</Text>
-            <Text>
-              Created at:{" "}
-              {selectedRow && new Date(selectedRow.createdAt).toLocaleString()}
-            </Text>
-
-            <View style={styles.modalButtonContainer}>
-              <Button style={styles.modalButton}>Edit</Button>
-              <Button style={styles.modalButton} onPress={() => handleDelete(selectedRow && selectedRow._id)}>Delete</Button>
-            </View>
-          </Modal>
-        </Portal>
-      </Provider>
-
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        renderTabBar={renderTabBar}
+      />
       <FooterList />
     </View>
   );
@@ -472,7 +1044,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
   },
-
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    backgroundColor: "white",
+  },
   mainText: {
     fontSize: 30,
     textAlign: "center",
@@ -502,15 +1080,12 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: "white",
     padding: 70,
-    borderRadius: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
+    borderRadius: 20,
   },
 
   modalContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "space-around",
   },
 
   infoCell: {
@@ -549,7 +1124,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   createButton: {
-    // Add any styles specific to the create button
+    color: "white",
   },
   dialogContainer: {
     zIndex: 9999, // Set a high z-index value
@@ -601,6 +1176,26 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     paddingHorizontal: 10,
     marginBottom: 10,
+  },
+  tabBar: {
+    backgroundColor: "white",
+    elevation: 0,
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "black",
+  },
+  tabIndicator: {
+    backgroundColor: "green",
+  },
+  modalLocationActions: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingTop: 20,
+  },
+  dialog: {
+    height: 550, // Specify the desired height
   },
 });
 
