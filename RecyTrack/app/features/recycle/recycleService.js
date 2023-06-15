@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://10.171.68.153:5000/api/recycle/";
+const API_URL = "http://10.171.121.10:5000/api/recycle/";
 
 // Get all recycle locations
 const getAllRecycleLocationByPageAndKeyword = async (token, page, search) => {
@@ -162,7 +162,7 @@ const updateRecycleHistoryById = async (id, newFormData, token) => {
     },
   };
   const response = await axios.put(
-    API_URL + `recycling-history/${id}`,
+    API_URL + `update/${id}`,
     newFormData,
     config
   );

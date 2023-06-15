@@ -8,6 +8,8 @@ import { Provider } from "react-redux";
 import { store } from "./app/features/store";
 import Toast from 'react-native-toast-message';
 import { NativeBaseProvider, Box } from "native-base";
+import { PaperProvider } from 'react-native-paper';
+
 
 import Navigation from "./app/components/Navigation";
 
@@ -20,6 +22,7 @@ export default function App() {
   });
 
   return (
+    <PaperProvider>
     <Provider store={store}>
       <NativeBaseProvider>
       <RootSiblingParent>
@@ -28,6 +31,7 @@ export default function App() {
       <Toast />
       </NativeBaseProvider>
     </Provider>
+    </PaperProvider>
     
   );
 }
