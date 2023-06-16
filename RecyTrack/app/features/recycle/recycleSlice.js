@@ -5,6 +5,7 @@ const initialState = {
   recycleLocations: [],
   recycleLocationById: {},
   recycleHistoryById: {},
+  allRecyclingHistories: [],
   recyclingHistories: [],
   recyclingHistoriesTop8: [],
   mostRecycledWasteType: {},
@@ -236,6 +237,28 @@ export const getMostRecycledWasteType = createAsyncThunk(
   }
 );
 
+// Get All Recycling Histories
+export const getAllRecyclingHistories = createAsyncThunk(
+  "recycle/getAllRecyclingHistories",
+  async (token, thunkAPI) => {
+    try {
+      const recycleHistories = await recycleService.getAllRecyclingHistories(
+        token
+      );
+      return recycleHistories;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+
 // Get Recycle History by User ID and Page
 export const getRecycleHistoryByUserIdAndPage = createAsyncThunk(
   "recycle/getRecycleHistoryByUserIdAndPage",
@@ -463,6 +486,21 @@ export const recycleSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.recyclingHistoriesTop8 = action.payload;
+      })
+         // Get All Recycle Histories
+       .addCase(getAllRecyclingHistories.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getAllRecyclingHistories.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.allRecyclingHistories = action.payload;
+      })
+      .addCase(getAllRecyclingHistories.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.allRecyclingHistories = null;
       })
       .addCase(getRecycleHistoryByUserIdAndPage.rejected, (state, action) => {
         state.isLoading = false;

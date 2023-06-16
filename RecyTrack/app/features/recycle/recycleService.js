@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://10.171.121.10:5000/api/recycle/";
+const API_URL = "http://10.171.66.219:5000/api/recycle/";
 
 // Get all recycle locations
 const getAllRecycleLocationByPageAndKeyword = async (token, page, search) => {
@@ -89,6 +89,18 @@ const getRecycleLocationById = async (id, token) => {
   return response.data; // return the deleted user id to update the Redux store
 };
 
+const getAllRecyclingHistories = async ( token) => {
+  
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + `getAllRecyclingHistories`, config);
+  return response.data; // return the deleted user id to update the Redux store
+
+}
+
 const getRecycleHistoryById = async (id, token) => {
   const config = {
     headers: {
@@ -173,6 +185,7 @@ const recycleService = {
   getAllRecycleLocation,
   getAllRecycleLocationByPageAndKeyword,
   createRecycleCollection,
+  getAllRecyclingHistories,
   createRecyclingHistory,
   deleteRecycleCollection,
   deleteRecycleHistory,

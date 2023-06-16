@@ -49,6 +49,8 @@ import {
   deleteRecycleLocation,
 } from "../features/recycle/recycleSlice";
 
+import UserHistoryTable from "../components/userHistoryTable";
+
 const Recycling = () => {
   //------------------------------------------------------------RECYCLING HISTORY--------------------------------------------------------------
 
@@ -56,7 +58,7 @@ const Recycling = () => {
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [recyclingHistoryId, setRecyclingHistoryId] = useState("")
+  const [recyclingHistoryId, setRecyclingHistoryId] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [visible, setVisible] = useState(false);
 
@@ -466,6 +468,7 @@ const Recycling = () => {
 
             {/* DATA TABLE */}
 
+            {user.isAdmin ? <UserHistoryTable/> :
             <DataTable>
               <DataTable.Header>
                 <DataTable.Title style={styles.longCell}>
@@ -504,7 +507,7 @@ const Recycling = () => {
                 showFirstButton
                 showLastButton
               />
-            </DataTable>
+            </DataTable>}
 
             {/* Render the Modal */}
 
@@ -562,6 +565,7 @@ const Recycling = () => {
   const [totalPagesLocation, setTotalPagesLocation] = useState(1);
   const [selectedRowLocation, setSelectedRowLocation] = useState(null);
   const [visibleLocation, setVisibleLocation] = useState(false);
+  const [recyclingLocationId, setRecyclingLocationId] = useState("");
 
   const numberOfItemsPerPageList = [2, 3, 4];
 
@@ -753,6 +757,59 @@ const Recycling = () => {
     }
   };
 
+  const handleEditLocation = async (id) => {
+    await dispatch(getRecycleLocationById({ id, token: user.token }));
+    setOpenEditDialogLocation(true);
+    setRecyclingLocationId(id);
+  };
+
+  const onSubmitEditLocation = async (valuesLocation) => {
+    
+    const newFormData = {
+      id: recyclingLocationId,
+      locationName: valuesLocation.locationName,
+      contactNumber: valuesLocation.contactNumber,
+      latitude: valuesLocation.latitude,
+      longitude: valuesLocation.longitude,
+      address: {
+        street: valuesLocation.street,
+        city: valuesLocation.city,
+        postalCode: valuesLocation.postalCode,
+        state: valuesLocation.state,
+        country: valuesLocation.country,
+      },
+    };
+
+    const id = recycleLocation._id;
+
+    console.log(newFormData);
+
+    try {
+      await dispatch(
+        updateRecycleLocationById({ id, newFormData, token: user.token })
+      )
+        .then(() => {
+          dispatch(
+            getAllRecycleLocationByPageAndKeyword({
+              token: user.token,
+              page,
+              search,
+            })
+          );
+        })
+        .then(() => {
+          dispatch(getAllRecycleLocation(user.token));
+        });
+        Toast.show({
+          type: "success",
+          text1: "Recycling Location has been edited",
+        });
+      handleCloseLocation();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const renderLocationTab = () => {
     return (
       <View style={styles.container}>
@@ -853,7 +910,15 @@ const Recycling = () => {
               <View>
                 {user.isAdmin ? (
                   <View style={styles.modalLocationActions}>
-                    <Button>Edit</Button>
+                    <Button
+                      onPress={() =>
+                        handleEditLocation(
+                          selectedRowLocation && selectedRowLocation._id
+                        )
+                      }
+                    >
+                      Edit
+                    </Button>
                     <Button
                       onPress={() =>
                         handleDeleteLocation(
@@ -1006,6 +1071,137 @@ const Recycling = () => {
                 <Dialog.Actions>
                   <Button onPress={handleCloseLocation}>Cancel</Button>
                   <Button onPress={() => onSubmitLocation(valuesLocation)}>
+                    Create
+                  </Button>
+                </Dialog.Actions>
+              </Dialog>
+            )}
+
+            {/* Edit Location Dialog */}
+
+            {openEditDialogLocation && (
+              <Dialog
+                visible={openEditDialogLocation}
+                onClose={handleCloseLocation}
+                style={styles.dialog}
+              >
+                <Dialog.Title>Edit the Recycling Locations</Dialog.Title>
+                <Dialog.ScrollArea>
+                  <ScrollView>
+                    <Dialog.Content>
+                      <Text style={styles.label}>Recycling Location Name</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.locationName}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            locationName: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>Street Address</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.street}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            street: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>City</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.city}
+                        onChangeText={(text) =>
+                          setValuesLocation({ ...valuesLocation, city: text })
+                        }
+                      />
+                      <Text style={styles.label}>Postal Code</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.postalCode}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            postalCode: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>State</Text>
+                      <Picker
+                        selectedValue={valuesLocation.state}
+                        onValueChange={(itemValue) =>
+                          setValuesLocation((prevState) => ({
+                            ...prevState,
+                            state: itemValue,
+                          }))
+                        }
+                      >
+                        {malaysiaStates.map((state) => (
+                          <Picker.Item
+                            key={state}
+                            value={state}
+                            label={state}
+                            color="#000000"
+                          >
+                            {state}
+                          </Picker.Item>
+                        ))}
+                      </Picker>
+                      <Text style={styles.label}>Country</Text>
+                      <Picker
+                        selectedValue={valuesLocation.country}
+                        onValueChange={(itemValue) =>
+                          setValuesLocation((prevState) => ({
+                            ...prevState,
+                            country: itemValue,
+                          }))
+                        }
+                      >
+                        <Picker.Item label="Malaysia" value="Malaysia" />
+                      </Picker>
+                      <Text style={styles.label}>Contact Number</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.contactNumber}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            contactNumber: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>Latitude</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.latitude}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            latitude: text,
+                          })
+                        }
+                      />
+                      <Text style={styles.label}>Longitude</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={valuesLocation.longitude}
+                        onChangeText={(text) =>
+                          setValuesLocation({
+                            ...valuesLocation,
+                            longitude: text,
+                          })
+                        }
+                      />
+                    </Dialog.Content>
+                  </ScrollView>
+                </Dialog.ScrollArea>
+                <Dialog.Actions>
+                  <Button onPress={handleCloseLocation}>Cancel</Button>
+                  <Button onPress={() => onSubmitEditLocation(valuesLocation)}>
                     Create
                   </Button>
                 </Dialog.Actions>
