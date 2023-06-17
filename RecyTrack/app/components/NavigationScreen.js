@@ -9,6 +9,7 @@ import Register from "../screens/Register";
 import Home from "../screens/Home";
 import Recycling from "../screens/Recycling";
 import Account from "../screens/Account";
+import Feedbacks from "../screens/Feedbacks";
 
 
 const Stack = createNativeStackNavigator();
@@ -33,6 +34,7 @@ const NavigationScreen = () => {
           />
           <Stack.Screen name="Recycling" component={Recycling} />
           <Stack.Screen name="Account" component={Account} />
+          <Stack.Screen name="Feedbacks" component={Feedbacks} />
         </>
       ) : (
         <>
