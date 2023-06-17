@@ -107,12 +107,12 @@ const Account = ({ navigation }) => {
                 <Text style={styles.cardContent}>{user.name}</Text>
               </Card.Content>
               <Card.Actions>
-                <Button buttonColor="green" textColor="white">
+                {/* <Button buttonColor="green" textColor="white">
                   Edit Profile
-                </Button>
+                </Button> */}
               </Card.Actions>
             </Card>
-          </View>
+          
 
           {!user.isAdmin && (
             <View>
@@ -145,6 +145,7 @@ const Account = ({ navigation }) => {
               </TouchableRipple>
             </View>
           )}
+          </View>
           <View style={styles.footer}>
             <FooterList />
           </View>

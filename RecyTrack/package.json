@@ -29,6 +29,7 @@
     "react-native-datatable-component": "^2.1.13",
     "react-native-document-picker": "^9.0.1",
     "react-native-dropdown-picker": "^5.4.6",
+    "react-native-elements": "^3.4.3",
     "react-native-filereader": "^1.0.6",
     "react-native-fs": "^2.20.0",
     "react-native-open-maps": "^0.4.2",

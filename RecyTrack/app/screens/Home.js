@@ -15,9 +15,9 @@ const Home = () => {
   return (
     <View style={styles.container}>
       {user.isAdmin ? (
-        <Text style={styles.mainText}>Welcome, Admin!</Text>
+        <Text style={styles.mainText}>Welcome, {user.name}!</Text>
       ) : (
-        <Text style={styles.mainText}>Welcome, User!</Text>
+        <Text style={styles.mainText}>Welcome, {user.name}!</Text>
       )}
       <FooterList />
     </View>

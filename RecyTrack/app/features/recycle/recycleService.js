@@ -23,7 +23,7 @@ const getAllRecycleLocation = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + `location`, config);
+  const response = await axios.get(API_URL + `location/all`, config);
   return response.data;
 };
 
@@ -89,17 +89,18 @@ const getRecycleLocationById = async (id, token) => {
   return response.data; // return the deleted user id to update the Redux store
 };
 
-const getAllRecyclingHistories = async ( token) => {
-  
+const getAllRecyclingHistories = async (token) => {
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + `getAllRecyclingHistories`, config);
+  const response = await axios.get(
+    API_URL + `getAllRecyclingHistories`,
+    config
+  );
   return response.data; // return the deleted user id to update the Redux store
-
-}
+};
 
 const getRecycleHistoryById = async (id, token) => {
   const config = {

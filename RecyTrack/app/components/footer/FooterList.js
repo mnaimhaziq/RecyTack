@@ -9,18 +9,20 @@ const FooterList = () => {
   const route = useRoute();
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
       <FooterItem
         text="Home"
         name="home"
         handlePress={() => navigation.navigate("Home")}
         routeName={route.name}
+        screenName="Home"
       />
       <FooterItem
-        text="RecyclingHistory"
+        text="Recycling"
         name="recycle"
         handlePress={() => navigation.navigate("Recycling")}
         routeName={route.name}
+        screenName="Recycling"
       />
       <FooterItem text="Education" name="library-books" />
       <FooterItem text="Leaderboard" name="leaderboard" />
@@ -29,6 +31,7 @@ const FooterList = () => {
         name="account-circle"
         handlePress={() => navigation.navigate("Account")}
         routeName={route.name}
+        screenName="Account"
       />
     </View>
   );
@@ -39,8 +42,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     margin: 10,
     marginHorizontal: 30,
-    justifyContent: "space-between",
-    // backgroundColor: "darkgreen",
+    justifyContent: "space-evenly",
   },
 });
 

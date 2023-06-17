@@ -32,7 +32,8 @@ import { Toast } from "react-native-toast-message/lib/src/Toast";
 import { Select } from "native-base";
 import { TabView, TabBar } from "react-native-tab-view";
 import { openMap, createOpenLink } from "react-native-open-maps";
-import { ScrollView } from "react-native-web";
+import { Dimensions } from "react-native";
+import { ScrollView } from "native-base";
 
 import {
   getAllRecycleLocation,
@@ -49,7 +50,7 @@ import {
   deleteRecycleLocation,
 } from "../features/recycle/recycleSlice";
 
-import UserHistoryTable from "../components/userHistoryTable";
+import UserHistoryTable from "../components/UserHistoryTable";
 
 const Recycling = () => {
   //------------------------------------------------------------RECYCLING HISTORY--------------------------------------------------------------
@@ -274,13 +275,77 @@ const Recycling = () => {
         {/* Existing code for history tab */}
         <Provider>
           <Portal>
-            <View style={styles.headerContainer}>
-              <View style={styles.buttonContainer}>
-                <Button style={styles.createButton} onPress={handleClickOpen}>
-                  Create new recycling history
-                </Button>
-              </View>
-            </View>
+            {/* <View style={styles.buttonContainer}>
+              <Button style={styles.createButton} onPress={handleClickOpen}>
+                <Text style={styles.createButtonText}>Create</Text>
+              </Button>
+            </View> */}
+
+            {/* DATA TABLE */}
+
+            {user.isAdmin ? (
+              <UserHistoryTable />
+            ) : (
+              <>
+                <View style={styles.buttonContainer}>
+                  <Button style={styles.createButton} onPress={handleClickOpen}>
+                    <Text style={styles.createButtonText}>Create</Text>
+                  </Button>
+                </View>
+                <View
+                  style={[
+                    styles.dataTable,
+                    { maxHeight: windowHeight - 200, elevation: 2 },
+                  ]}
+                >
+                  <View style={styles.tableContainer}>
+                    <DataTable style={styles.dataTable}>
+                      <DataTable.Header style={styles.header}>
+                        <DataTable.Title style={styles.longCell}>
+                          <Text style={styles.headerText}>Location</Text>
+                        </DataTable.Title>
+                        <DataTable.Title style={styles.longCell}>
+                          <Text style={styles.headerText}>Method</Text>
+                        </DataTable.Title>
+                        <DataTable.Title style={styles.shortCell}>
+                          <Text style={styles.headerText}>Type</Text>
+                        </DataTable.Title>
+                      </DataTable.Header>
+
+                      {recyclingHistories.data &&
+                        recyclingHistories.data.map((row, idx) => (
+                          <React.Fragment key={row._id}>
+                            <DataTable.Row
+                              onPress={() => handleInfoButtonPress(row)}
+                            >
+                              <DataTable.Cell style={styles.longCell}>
+                                {row.recyclingLocation
+                                  ? row.recyclingLocation.locationName
+                                  : "null"}
+                              </DataTable.Cell>
+                              <DataTable.Cell style={styles.longCell}>
+                                {row.recyclingMethod}
+                              </DataTable.Cell>
+                              <DataTable.Cell style={styles.shortCell}>
+                                {row.wasteType}
+                              </DataTable.Cell>
+                            </DataTable.Row>
+                          </React.Fragment>
+                        ))}
+
+                      <DataTable.Pagination
+                        count={totalPages}
+                        page={page}
+                        onPageChange={handlePageChange}
+                        siblingCount={1}
+                        showFirstButton
+                        showLastButton
+                      />
+                    </DataTable>
+                  </View>
+                </View>
+              </>
+            )}
 
             {/* Render the Add Dialog */}
 
@@ -466,49 +531,6 @@ const Recycling = () => {
               </View>
             )}
 
-            {/* DATA TABLE */}
-
-            {user.isAdmin ? <UserHistoryTable/> :
-            <DataTable>
-              <DataTable.Header>
-                <DataTable.Title style={styles.longCell}>
-                  Location
-                </DataTable.Title>
-                <DataTable.Title style={styles.longCell}>
-                  Method
-                </DataTable.Title>
-                <DataTable.Title style={styles.shortCell}>Type</DataTable.Title>
-              </DataTable.Header>
-
-              {recyclingHistories.data &&
-                recyclingHistories.data.map((row, idx) => (
-                  <React.Fragment key={row._id}>
-                    <DataTable.Row onPress={() => handleInfoButtonPress(row)}>
-                      <DataTable.Cell style={styles.longCell}>
-                        {row.recyclingLocation
-                          ? row.recyclingLocation.locationName
-                          : "null"}
-                      </DataTable.Cell>
-                      <DataTable.Cell style={styles.longCell}>
-                        {row.recyclingMethod}
-                      </DataTable.Cell>
-                      <DataTable.Cell style={styles.shortCell}>
-                        {row.wasteType}
-                      </DataTable.Cell>
-                    </DataTable.Row>
-                  </React.Fragment>
-                ))}
-
-              <DataTable.Pagination
-                count={totalPages}
-                page={page}
-                onPageChange={handlePageChange}
-                siblingCount={1}
-                showFirstButton
-                showLastButton
-              />
-            </DataTable>}
-
             {/* Render the Modal */}
 
             <Modal
@@ -559,15 +581,13 @@ const Recycling = () => {
 
   const [openLocation, setOpenLocation] = useState(false);
   const [openEditDialogLocation, setOpenEditDialogLocation] = useState(false);
-  const [pageLocation, setPageLocation] = useState(0);
+  const [pageLocation, setPageLocation] = useState(1);
   const [numberOfItemsPerPage, setNumberOfItemsPerPage] = useState(1);
   const [search, setSearch] = useState("");
   const [totalPagesLocation, setTotalPagesLocation] = useState(1);
   const [selectedRowLocation, setSelectedRowLocation] = useState(null);
   const [visibleLocation, setVisibleLocation] = useState(false);
   const [recyclingLocationId, setRecyclingLocationId] = useState("");
-
-  const numberOfItemsPerPageList = [2, 3, 4];
 
   const [malaysiaStates, setMalaysiaStates] = useState([
     "Johor",
@@ -588,43 +608,35 @@ const Recycling = () => {
     "Terengganu",
   ]);
 
-  const items = [
-    {
-      key: 1,
-      name: "Page 1",
-    },
-    {
-      key: 2,
-      name: "Page 2",
-    },
-    {
-      key: 3,
-      name: "Page 3",
-    },
-  ];
+  // const items = [
+  //   {
+  //     key: 1,
+  //     name: "Page 1",
+  //   },
+  //   {
+  //     key: 2,
+  //     name: "Page 2",
+  //   },
+  //   {
+  //     key: 3,
+  //     name: "Page 3",
+  //   },
+  // ];
 
-  const from = pageLocation * numberOfItemsPerPage;
-  const to = Math.min((pageLocation + 1) * numberOfItemsPerPage, items.length);
-
-  // const allRecycleLocations = useSelector(
-  //   (state) => state.recycle.allRecycleLocations.data
-  // );
+  // const from = pageLocation * numberOfItemsPerPage;
+  // const to = Math.min((pageLocation + 1) * numberOfItemsPerPage, items.length);
 
   const recycleLocation = useSelector(
     (state) => state.recycle.recycleLocationById
   );
 
-  const initialValuesLocation = {
-    locationName: "",
-    street: "",
-    city: "",
-    postalCode: "",
-    state: "",
-    country: "",
-    contactNumber: "",
-    latitude: "",
-    longitude: "",
-  };
+  const allRecycleLocations = useSelector(
+    (state) => state.recycle.allRecycleLocations
+  );
+
+  // const recycleLocations = useSelector(
+  //   (state) => state.recycle.recycleLocations
+  // );
 
   const [valuesLocation, setValuesLocation] = useState({
     locationName: "",
@@ -638,9 +650,9 @@ const Recycling = () => {
     longitude: "",
   });
 
-  useEffect(() => {
-    setPageLocation(0);
-  }, [numberOfItemsPerPage]);
+  // useEffect(() => {
+  //   setPageLocation(0);
+  // }, [numberOfItemsPerPage]);
 
   useEffect(() => {
     dispatch(getAllRecycleLocation(user.token));
@@ -651,7 +663,7 @@ const Recycling = () => {
         search,
       })
     );
-    setTotalPages(recycleLocations.pages);
+    setTotalPagesLocation(recycleLocations.pages);
   }, [dispatch, user.token, pageLocation, recycleLocations.pages, search]);
 
   const handleClickOpenLocation = () => {
@@ -663,13 +675,9 @@ const Recycling = () => {
     setOpenEditDialogLocation(false);
   };
 
-  const handlePageChangeLocation = (page) => {
-    setPageLocation(page);
-    console.log("Page changed:", page);
-  };
-
-  const handleItemsPerPageChange = (value) => {
-    setNumberOfItemsPerPage(value);
+  const handlePageChangeLocation = (value) => {
+    setPageLocation(value);
+    console.log("Page changed:", value);
   };
 
   const handleSearchChange = (event) => {
@@ -764,7 +772,6 @@ const Recycling = () => {
   };
 
   const onSubmitEditLocation = async (valuesLocation) => {
-    
     const newFormData = {
       id: recyclingLocationId,
       locationName: valuesLocation.locationName,
@@ -800,15 +807,17 @@ const Recycling = () => {
         .then(() => {
           dispatch(getAllRecycleLocation(user.token));
         });
-        Toast.show({
-          type: "success",
-          text1: "Recycling Location has been edited",
-        });
+      Toast.show({
+        type: "success",
+        text1: "Recycling Location has been edited",
+      });
       handleCloseLocation();
     } catch (error) {
       console.error(error);
     }
   };
+
+  const windowHeight = Dimensions.get("window").height;
 
   const renderLocationTab = () => {
     return (
@@ -816,60 +825,62 @@ const Recycling = () => {
         <Provider>
           <Portal>
             {user.isAdmin ? (
-              <View>
+              <View style={styles.buttonContainer}>
                 <Button
                   style={styles.createButton}
                   onPress={handleClickOpenLocation}
                 >
-                  Create new Recycling Location
+                  <Text style={styles.createButtonText}>Create</Text>
                 </Button>
               </View>
             ) : (
               <Text></Text>
             )}
-            <DataTable>
-              <DataTable.Header>
-                <DataTable.Title style={styles.longCell}>Name</DataTable.Title>
-                <DataTable.Title style={styles.longCell}>
+            <View
+              style={[
+                styles.dataTable,
+                { maxHeight: windowHeight - 200, elevation: 2 },
+              ]}
+            >
+              <View style={[styles.header, styles.row]}>
+                <Text style={[styles.headerText, styles.longCell]}>Name</Text>
+                <Text style={[styles.headerText, styles.longCell]}>
                   Address
-                </DataTable.Title>
-                <DataTable.Title style={styles.shortCell}>
+                </Text>
+                <Text style={[styles.headerText, styles.shortCell]}>
                   Contact
-                </DataTable.Title>
-              </DataTable.Header>
+                </Text>
+              </View>
 
-              {recycleLocations.data &&
-                recycleLocations.data.map((row) => (
-                  <React.Fragment key={row._id}>
-                    <DataTable.Row
+              <ScrollView contentContainerStyle={styles.scrollContainer}>
+                {allRecycleLocations.data &&
+                  allRecycleLocations.data.map((row) => (
+                    <TouchableOpacity
+                      key={row._id}
+                      style={[styles.row, styles.rowEven]}
                       onPress={() => handleInfoButtonPressLocation(row)}
                     >
-                      <DataTable.Cell style={styles.longCell}>
+                      <Text style={[styles.text, styles.longCell]}>
                         {row.locationName}
-                      </DataTable.Cell>
-                      <DataTable.Cell style={styles.longCell}>
-                        `${row.address.street}, ${row.address.city}, $
-                        {row.address.postalCode}, ${row.address.state}, $
-                        {row.address.country}`
-                      </DataTable.Cell>
-                      <DataTable.Cell style={styles.shortCell}>
+                      </Text>
+                      <Text
+                        style={[styles.text, styles.longCell]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}
+                      </Text>
+                      <Text
+                        style={[styles.text, styles.shortCell]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
                         {row.contactNumber}
-                      </DataTable.Cell>
-                    </DataTable.Row>
-                  </React.Fragment>
-                ))}
-
-              <DataTable.Pagination
-                page={pageLocation}
-                numberOfPages={Math.ceil(items.length / numberOfItemsPerPage)}
-                onPageChange={handlePageChangeLocation}
-                label={`${from + 1}-${to} of ${items.length}`}
-                showFastPaginationControls
-                numberOfItemsPerPageList={numberOfItemsPerPageList}
-                numberOfItemsPerPage={numberOfItemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-              />
-            </DataTable>
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+              </ScrollView>
+            </View>
 
             {/* Render the Modal */}
 
@@ -1238,7 +1249,14 @@ const Recycling = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "space-between",
+    // justifyContent: "center",
+    // alignItems: "center",
+    backgroundColor: "#f2f2f2",
+  },
+  tableContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   input: {
     height: 40,
@@ -1308,18 +1326,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
   },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
+  // headerText: {
+  //   fontSize: 18,
+  //   fontWeight: "bold",
+  //   marginLeft: 10,
+  // },
   buttonContainer: {
-    flex: 1,
+    marginTop: 16,
     alignItems: "flex-end",
-    marginRight: 10,
-    marginTop: 15,
+    justifyContent: "flex-end",
   },
   createButton: {
+    color: "white",
+    alignItems: "flex-end",
+    marginTop: 5,
+  },
+  createButtonText: {
     color: "white",
   },
   dialogContainer: {
@@ -1392,6 +1414,42 @@ const styles = StyleSheet.create({
   },
   dialog: {
     height: 550, // Specify the desired height
+  },
+  dataTable: {
+    // width: "90%",
+    borderRadius: 10,
+    elevation: 3,
+    // backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    marginTop: 16,
+    paddingBottom: 16,
+  },
+  header: {
+    backgroundColor: "#4CAF50",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: 48,
+    alignItems: "center",
+  },
+  headerText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    height: 48,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  text: {
+    fontSize: 14,
   },
 });
 

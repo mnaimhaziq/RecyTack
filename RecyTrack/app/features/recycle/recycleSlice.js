@@ -2,10 +2,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import recycleService from "./recycleService";
 
 const initialState = {
+  allRecycleLocations: [],
   recycleLocations: [],
   recycleLocationById: {},
   recycleHistoryById: {},
   allRecyclingHistories: [],
+  totalRecyclingHistoryByUserId: {},
   recyclingHistories: [],
   recyclingHistoriesTop8: [],
   mostRecycledWasteType: {},
@@ -59,7 +61,6 @@ export const getAllRecycleLocation = createAsyncThunk(
     }
   }
 );
-
 
 //Create recycle collection
 export const createRecycleLocation = createAsyncThunk(
@@ -220,10 +221,8 @@ export const getMostRecycledWasteType = createAsyncThunk(
   "recycle/getMostRecycledWasteType",
   async ({ id, token }, thunkAPI) => {
     try {
-      const mostRecycledWasteType= await recycleService.getMostRecycledWasteType(
-        id,
-        token
-      );
+      const mostRecycledWasteType =
+        await recycleService.getMostRecycledWasteType(id, token);
       return mostRecycledWasteType;
     } catch (error) {
       const message =
@@ -258,17 +257,13 @@ export const getAllRecyclingHistories = createAsyncThunk(
   }
 );
 
-
 // Get Recycle History by User ID and Page
 export const getRecycleHistoryByUserIdAndPage = createAsyncThunk(
   "recycle/getRecycleHistoryByUserIdAndPage",
   async ({ id, page, token }, thunkAPI) => {
     try {
-      const recyclingHistoriesTop8 = await recycleService.getRecycleHistoryByUserIdAndPage(
-        id,
-        page,
-        token
-      );
+      const recyclingHistoriesTop8 =
+        await recycleService.getRecycleHistoryByUserIdAndPage(id, page, token);
       return recyclingHistoriesTop8;
     } catch (error) {
       const message =
@@ -337,9 +332,11 @@ export const recycleSlice = createSlice({
       state.isError = false;
       state.isSuccess = false;
       state.message = "";
+      state.allRecycleLocations = [];
+      state.allRecyclingHistories = [];
       state.recycleLocationById = {};
-      state.error =  "";
-      state.recycleLocations =[];
+      state.error = "";
+      state.recycleLocations = [];
       state.recycleLocationById = {};
       state.recycleHistoryById = {};
       state.recyclingHistories = [];
@@ -349,19 +346,20 @@ export const recycleSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Get All Recycle Location
       .addCase(getAllRecycleLocation.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getAllRecycleLocation.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.recycleLocations = action.payload;
+        state.allRecycleLocations = action.payload;
       })
       .addCase(getAllRecycleLocation.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
-        state.recycleLocations = null;
+        state.allRecycleLocations = null;
       })
       .addCase(getAllRecycleLocationByPageAndKeyword.pending, (state) => {
         state.isLoading = true;
@@ -447,12 +445,13 @@ export const recycleSlice = createSlice({
         state.isSuccess = true;
         state.recycleHistoryById = action.payload;
       })
-      .addCase(getRecycleHistoryById.rejected, (state, action) => { 
+      .addCase(getRecycleHistoryById.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
         state.recycleHistoryById = {};
-      }).addCase(getMostRecycledWasteType.pending, (state) => {
+      })
+      .addCase(getMostRecycledWasteType.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getMostRecycledWasteType.fulfilled, (state, action) => {
@@ -465,7 +464,8 @@ export const recycleSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         state.mostRecycledWasteType = {};
-      }).addCase(getRecycleHistoryByUserId.pending, (state) => {
+      })
+      .addCase(getRecycleHistoryByUserId.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getRecycleHistoryByUserId.fulfilled, (state, action) => {
@@ -487,8 +487,8 @@ export const recycleSlice = createSlice({
         state.isSuccess = true;
         state.recyclingHistoriesTop8 = action.payload;
       })
-         // Get All Recycle Histories
-       .addCase(getAllRecyclingHistories.pending, (state) => {
+      // Get All Recycle Histories
+      .addCase(getAllRecyclingHistories.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getAllRecyclingHistories.fulfilled, (state, action) => {
@@ -531,7 +531,7 @@ export const recycleSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
-      });;
+      });
   },
 });
 
