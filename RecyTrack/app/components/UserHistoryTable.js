@@ -187,11 +187,13 @@ const UserHistoryTable = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, styles.modifiedContainer]}>
       <View style={styles.buttonContainer}>
-        <Button style={styles.createButton} onPress={handleClickOpen}>
-          <Text style={styles.createButtonText}>Create</Text>
-        </Button>
+        <View style={styles.createButtonWrapper}>
+          <Button style={styles.createButton} onPress={handleClickOpen}>
+            <Text style={styles.createButtonText}>Create</Text>
+          </Button>
+        </View>
       </View>
       <View
         style={[
@@ -236,27 +238,43 @@ const UserHistoryTable = () => {
         onDismiss={handleCloseModal}
         contentContainerStyle={styles.modalContainer}
       >
-        <Text>Full Recycling History Information</Text>
-        <Text>
-          Recycling Location: {selectedRow && selectedRow.recyclingLocation}
-        </Text>
-        <Text>
-          Recycling Method: {selectedRow && selectedRow.recyclingMethod}
-        </Text>
-        <Text>
-          Recycling Waste Type: {selectedRow && selectedRow.wasteType}
-        </Text>
-        <Text>Quantity: {selectedRow && selectedRow.quantity}</Text>
-        <Text>
-          Created at:{" "}
-          {selectedRow && new Date(selectedRow.createdAt).toLocaleString()}
-        </Text>
-        <Text>
-          Updated at:{" "}
-          {selectedRow && new Date(selectedRow.updatedAt).toLocaleString()}
-        </Text>
+        <Text style={styles.mainTitle}>Full Recycling History Information</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>Recycling Location: </Text>
+          <Text style={styles.info}>
+            {selectedRow && selectedRow.recyclingLocation}
+          </Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>Recycling Method:</Text>
+          <Text style={styles.info}>
+            {selectedRow && selectedRow.recyclingMethod}
+          </Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>Recycling Waste Type:</Text>
+          <Text style={styles.info}>
+            {selectedRow && selectedRow.wasteType}
+          </Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>Quantity:</Text>
+          <Text style={styles.info}>{selectedRow && selectedRow.quantity}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>Created at:</Text>
+          <Text style={styles.info}>
+            {selectedRow && new Date(selectedRow.createdAt).toLocaleString()}
+          </Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>Updated At at:</Text>
+          <Text style={styles.info}>
+            {selectedRow && new Date(selectedRow.updatedAt).toLocaleString()}
+          </Text>
+        </View>
 
-        <View style={styles.modalButtonContainer}>
+        <View style={styles.modalLocationActions}>
           <Button
             style={styles.modalButton}
             onPress={() => handleEdit(selectedRow && selectedRow)}
@@ -277,12 +295,14 @@ const UserHistoryTable = () => {
       {open && (
         <View style={styles.overlay}>
           {/* Render the Dialog here */}
-          <Dialog visible={open} onClose={handleClose}>
-            <Dialog.Title>Add New Recycling History </Dialog.Title>
-
+          <Dialog visible={open} onDismiss={handleClose}>
+            <Dialog.Title style={styles.dialogTitle}>
+              Add New Recycling History for 
+            </Dialog.Title>
             <Dialog.Content>
               <Text style={styles.label}>User</Text>
               <Picker
+                style={styles.picker}
                 selectedValue={valuesAdd.user_id}
                 onValueChange={(itemValue) =>
                   setValuesAdd((prevState) => ({
@@ -291,6 +311,7 @@ const UserHistoryTable = () => {
                   }))
                 }
               >
+                <Picker.Item label="Select User" value="" />
                 {Array.from(
                   new Set(allRecyclingHistories.map((data) => data.user_id))
                 ).map((userId) => {
@@ -308,6 +329,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Recycling Location</Text>
               <Picker
+                style={styles.picker}
                 selectedValue={valuesAdd.recyclingLocationId}
                 onValueChange={(itemValue) =>
                   setValuesAdd((prevState) => ({
@@ -316,6 +338,7 @@ const UserHistoryTable = () => {
                   }))
                 }
               >
+                <Picker.Item label="Select Recycling Location" value="" />
                 {allRecycleLocations.data
                   .slice()
                   .sort((a, b) => a.locationName.localeCompare(b.locationName))
@@ -329,6 +352,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Recycling Method</Text>
               <Picker
+                style={styles.picker}
                 selectedValue={valuesAdd.recyclingMethod}
                 onValueChange={(itemValue) =>
                   setValuesAdd((prevState) => ({
@@ -337,6 +361,7 @@ const UserHistoryTable = () => {
                   }))
                 }
               >
+                <Picker.Item label="Select Method" value="" />
                 <Picker.Item label="Curbside Recycling" value="curbside" />
                 <Picker.Item label="Drop-off Recycling" value="drop-off" />
                 <Picker.Item label="Composting" value="composting" />
@@ -347,6 +372,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Waste Type</Text>
               <Picker
+                style={styles.picker}
                 selectedValue={valuesAdd.wasteType}
                 onValueChange={(itemValue) =>
                   setValuesAdd((prevState) => ({
@@ -355,6 +381,7 @@ const UserHistoryTable = () => {
                   }))
                 }
               >
+                <Picker.Item label="Select Waste Type" value="" />
                 <Picker.Item label="Plastic" value="Plastic" />
                 <Picker.Item label="Paper" value="Paper" />
                 <Picker.Item label="Glass" value="Glass" />
@@ -365,6 +392,7 @@ const UserHistoryTable = () => {
               <Text style={styles.label}>Quantity</Text>
               <TextInput
                 style={styles.input}
+                placeholder="Enter Quantity"
                 value={valuesAdd.quantity}
                 onChangeText={(text) =>
                   setValuesAdd((prevState) => ({
@@ -374,8 +402,10 @@ const UserHistoryTable = () => {
                 }
               />
             </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={handleClose}>Cancel</Button>
+            <Dialog.Actions style={styles.dialogActions}>
+              <Button onPress={handleClose}>
+                Cancel
+              </Button>
               <Button onPress={() => onSubmit(valuesAdd)}>Create</Button>
             </Dialog.Actions>
           </Dialog>
@@ -388,12 +418,13 @@ const UserHistoryTable = () => {
         <View style={styles.overlay}>
           {/* Render the Dialog here */}
           <Dialog visible={openEditDialog} onClose={handleClose}>
-            <Dialog.Title>
+            <Dialog.Title style={styles.dialogTitle}>
               Edit Recycling History for User : {editedRow.user}
             </Dialog.Title>
             <Dialog.Content>
               <Text style={styles.label}>Recycling Location</Text>
               <Picker
+              style={styles.picker}
                 selectedValue={values.recyclingLocationId}
                 onValueChange={(itemValue) =>
                   setValues((prevState) => ({
@@ -415,6 +446,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Recycling Method</Text>
               <Picker
+              style={styles.picker}
                 selectedValue={values.recyclingMethod}
                 onValueChange={(itemValue) =>
                   setValues((prevState) => ({
@@ -433,6 +465,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Waste Type</Text>
               <Picker
+              style={styles.picker}
                 selectedValue={values.wasteType}
                 onValueChange={(itemValue) =>
                   setValues((prevState) => ({
@@ -451,6 +484,7 @@ const UserHistoryTable = () => {
               <Text style={styles.label}>Quantity</Text>
               <TextInput
                 style={styles.input}
+                placeholder="Enter Quantity"
                 value={values.quantity}
                 onChangeText={(text) =>
                   setValues({ ...values, quantity: text })
@@ -458,7 +492,7 @@ const UserHistoryTable = () => {
               />
               {/* {setValues({ ...values, id: recyclingHistory._id})} */}
             </Dialog.Content>
-            <Dialog.Actions>
+            <Dialog.Actions style={styles.dialogActions}>
               <Button onPress={handleClose}>Cancel</Button>
               <Button onPress={() => onSubmitEdit(values)}>Confirm</Button>
             </Dialog.Actions>
@@ -475,6 +509,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     // backgroundColor: "#f2f2f2",
+  },
+  modifiedContainer: {
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
   },
   dataTable: {
     // width: "90%",
@@ -532,11 +570,15 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: "#FFFFFF",
     fontSize: 14,
+    fontWeight: "bold",
   },
   buttonContainer: {
-    marginTop: 16,
     alignItems: "flex-end",
-    justifyContent: "flex-end",
+    marginTop: 10,
+    marginRight: 10,
+  },
+  createButtonWrapper: {
+    alignSelf: "flex-end",
   },
   modalContainer: {
     backgroundColor: "white",
@@ -563,6 +605,63 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.6)", // Adjust the opacity as desired
     zIndex: 9999,
     // Add any other necessary styles
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 8,
+  },
+  modalContent: {
+    marginBottom: 20,
+  },
+  mainTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  infoContainer: {
+    marginBottom: 10,
+  },
+  title: {
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  info: {
+    fontSize: 16,
+  },
+  modalLocationActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+
+  // Dialog Styling
+
+  dialogTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  picker: {
+    height: 40,
+    marginBottom: 16,
+    backgroundColor: "#F5F5F5",
+  },
+  input: {
+    height: 40,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 4,
+  },
+  dialogActions: {
+    justifyContent: "flex-end",
   },
 });
 

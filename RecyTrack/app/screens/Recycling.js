@@ -298,51 +298,39 @@ const Recycling = () => {
                     { maxHeight: windowHeight - 200, elevation: 2 },
                   ]}
                 >
-                  <View style={styles.tableContainer}>
-                    <DataTable style={styles.dataTable}>
-                      <DataTable.Header style={styles.header}>
-                        <DataTable.Title style={styles.longCell}>
-                          <Text style={styles.headerText}>Location</Text>
-                        </DataTable.Title>
-                        <DataTable.Title style={styles.longCell}>
-                          <Text style={styles.headerText}>Method</Text>
-                        </DataTable.Title>
-                        <DataTable.Title style={styles.shortCell}>
-                          <Text style={styles.headerText}>Type</Text>
-                        </DataTable.Title>
-                      </DataTable.Header>
-
-                      {recyclingHistories.data &&
-                        recyclingHistories.data.map((row, idx) => (
-                          <React.Fragment key={row._id}>
-                            <DataTable.Row
-                              onPress={() => handleInfoButtonPress(row)}
-                            >
-                              <DataTable.Cell style={styles.longCell}>
-                                {row.recyclingLocation
-                                  ? row.recyclingLocation.locationName
-                                  : "null"}
-                              </DataTable.Cell>
-                              <DataTable.Cell style={styles.longCell}>
-                                {row.recyclingMethod}
-                              </DataTable.Cell>
-                              <DataTable.Cell style={styles.shortCell}>
-                                {row.wasteType}
-                              </DataTable.Cell>
-                            </DataTable.Row>
-                          </React.Fragment>
-                        ))}
-
-                      <DataTable.Pagination
-                        count={totalPages}
-                        page={page}
-                        onPageChange={handlePageChange}
-                        siblingCount={1}
-                        showFirstButton
-                        showLastButton
-                      />
-                    </DataTable>
-                  </View>
+                  <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={[styles.header, styles.row]}>
+                      <Text style={[styles.headerText, styles.longCell]}>
+                        Location
+                      </Text>
+                      <Text style={[styles.headerText, styles.longCell]}>
+                        Method
+                      </Text>
+                      <Text style={[styles.headerText, styles.longCell]}>
+                        CreatedAt
+                      </Text>
+                    </View>
+                    {recyclingHistories.data &&
+                      recyclingHistories.data.map((row, idx) => (
+                        <TouchableOpacity
+                          key={row._id}
+                          style={[styles.row, idx % 2 === 0 && styles.rowEven]}
+                          onPress={() => handleInfoButtonPress(row)}
+                        >
+                          <Text style={[styles.text, styles.longCell]}>
+                            {row.recyclingLocation
+                              ? row.recyclingLocation.locationName
+                              : "null"}
+                          </Text>
+                          <Text style={[styles.text, styles.longCell]}>
+                            {row.recyclingMethod}
+                          </Text>
+                          <Text style={[styles.text, styles.longCell]}>
+                            {new Date(row.createdAt).toLocaleString()}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                  </ScrollView>
                 </View>
               </>
             )}
@@ -352,11 +340,14 @@ const Recycling = () => {
             {open && (
               <View style={styles.overlay}>
                 {/* Render the Dialog here */}
-                <Dialog visible={open} onClose={handleClose}>
-                  <Dialog.Title>Add New Recycling History</Dialog.Title>
+                <Dialog visible={open} onDismiss={handleClose}>
+                  <Dialog.Title style={styles.dialogTitle}>
+                    Add New Recycling History
+                  </Dialog.Title>
                   <Dialog.Content>
                     <Text style={styles.label}>Recycling Location</Text>
                     <Picker
+                      style={styles.picker}
                       selectedValue={values.recyclingLocationId}
                       onValueChange={(itemValue) =>
                         setValues((prevState) => ({
@@ -365,7 +356,8 @@ const Recycling = () => {
                         }))
                       }
                     >
-                      {recycleLocations.data
+                      <Picker.Item label="Select Location" value="" />
+                      {allRecycleLocations.data
                         .slice()
                         .sort((a, b) =>
                           a.locationName.localeCompare(b.locationName)
@@ -380,6 +372,7 @@ const Recycling = () => {
                     </Picker>
                     <Text style={styles.label}>Recycling Method</Text>
                     <Picker
+                      style={styles.picker}
                       selectedValue={values.recyclingMethod}
                       onValueChange={(itemValue) =>
                         setValues((prevState) => ({
@@ -388,6 +381,7 @@ const Recycling = () => {
                         }))
                       }
                     >
+                      <Picker.Item label="Select Method" value="" />
                       <Picker.Item
                         label="Curbside Recycling"
                         value="curbside"
@@ -404,6 +398,7 @@ const Recycling = () => {
                     </Picker>
                     <Text style={styles.label}>Waste Type</Text>
                     <Picker
+                      style={styles.picker}
                       selectedValue={values.wasteType}
                       onValueChange={(itemValue) =>
                         setValues((prevState) => ({
@@ -412,6 +407,7 @@ const Recycling = () => {
                         }))
                       }
                     >
+                      <Picker.Item label="Select Waste Type" value="" />
                       <Picker.Item label="Plastic" value="Plastic" />
                       <Picker.Item label="Paper" value="Paper" />
                       <Picker.Item label="Glass" value="Glass" />
@@ -428,7 +424,7 @@ const Recycling = () => {
                       }
                     />
                   </Dialog.Content>
-                  <Dialog.Actions>
+                  <Dialog.Actions style={styles.dialogActions}>
                     <Button onPress={handleClose}>Cancel</Button>
                     <Button onPress={() => onSubmit(values)}>Create</Button>
                   </Dialog.Actions>
@@ -441,14 +437,15 @@ const Recycling = () => {
             {openEditDialog && (
               <View style={styles.overlay}>
                 {/* Render the Dialog here */}
-                <Dialog visible={openEditDialog} onClose={handleClose}>
-                  <Dialog.Title>
+                <Dialog visible={openEditDialog} onDismiss={handleClose}>
+                  <Dialog.Title style={styles.dialogTitle}>
                     Edit Recycling History for{" "}
                     {new Date(recyclingHistory.createdAt).toLocaleString()}
                   </Dialog.Title>
                   <Dialog.Content>
                     <Text style={styles.label}>Recycling Location</Text>
                     <Picker
+                      style={styles.picker}
                       selectedValue={values.recyclingLocationId}
                       onValueChange={(itemValue) =>
                         setValues((prevState) => ({
@@ -472,6 +469,7 @@ const Recycling = () => {
                     </Picker>
                     <Text style={styles.label}>Recycling Method</Text>
                     <Picker
+                      style={styles.picker}
                       selectedValue={values.recyclingMethod}
                       onValueChange={(itemValue) =>
                         setValues((prevState) => ({
@@ -496,6 +494,7 @@ const Recycling = () => {
                     </Picker>
                     <Text style={styles.label}>Waste Type</Text>
                     <Picker
+                      style={styles.picker}
                       selectedValue={values.wasteType}
                       onValueChange={(itemValue) =>
                         setValues((prevState) => ({
@@ -519,9 +518,8 @@ const Recycling = () => {
                         setValues({ ...values, quantity: text })
                       }
                     />
-                    {/* {setValues({ ...values, id: recyclingHistory._id})} */}
                   </Dialog.Content>
-                  <Dialog.Actions>
+                  <Dialog.Actions style={styles.dialogActions}>
                     <Button onPress={handleClose}>Cancel</Button>
                     <Button onPress={() => onSubmitEdit(values)}>
                       Confirm
@@ -538,25 +536,42 @@ const Recycling = () => {
               onDismiss={handleCloseModal}
               contentContainerStyle={styles.modalContainer}
             >
-              <Text>Full Recycling History Information</Text>
-              <Text>
-                Recycling Location:{" "}
-                {selectedRow && selectedRow.recyclingLocation.locationName}
+              <Text style={styles.mainTitle}>
+                Full Recycling History Information
               </Text>
-              <Text>
-                Recycling Method: {selectedRow && selectedRow.recyclingMethod}
-              </Text>
-              <Text>
-                Recycling Waste Type: {selectedRow && selectedRow.wasteType}
-              </Text>
-              <Text>Quantity: {selectedRow && selectedRow.quantity}</Text>
-              <Text>
-                Created at:{" "}
-                {selectedRow &&
-                  new Date(selectedRow.createdAt).toLocaleString()}
-              </Text>
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>Recycling Location: </Text>
+                <Text style={styles.info}>
+                  {selectedRow && selectedRow.recyclingLocation.locationName}
+                </Text>
+              </View>
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>Recycling Method:</Text>
+                <Text style={styles.info}>
+                  {selectedRow && selectedRow.recyclingMethod}
+                </Text>
+              </View>
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>Recycling Waste Type:</Text>
+                <Text style={styles.info}>
+                  {selectedRow && selectedRow.wasteType}
+                </Text>
+              </View>
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>Quantity:</Text>
+                <Text style={styles.info}>
+                  {selectedRow && selectedRow.quantity}
+                </Text>
+              </View>
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>Created at:</Text>
+                <Text style={styles.info}>
+                  {selectedRow &&
+                    new Date(selectedRow.createdAt).toLocaleString()}
+                </Text>
+              </View>
 
-              <View style={styles.modalButtonContainer}>
+              <View style={styles.modalLocationActions}>
                 <Button
                   style={styles.modalButton}
                   onPress={() => handleEdit(selectedRow && selectedRow._id)}
@@ -890,32 +905,45 @@ const Recycling = () => {
               contentContainerStyle={styles.modalContainer}
             >
               <View style={styles.modalContent}>
-                <Text>Full Recycling Location Information</Text>
-                <Text>Recycling Location: </Text>
-                <Text>
-                  {selectedRowLocation && selectedRowLocation.locationName}
+                <Text style={styles.mainTitle}>
+                  Full Recycling Location Information
                 </Text>
-                <Text>Address: </Text>
-                <Text>
-                  {selectedRowLocation && selectedRowLocation.address.street},{" "}
-                  {selectedRowLocation && selectedRowLocation.address.city},
-                  {selectedRowLocation &&
-                    selectedRowLocation.address.postalCode}
-                  , {selectedRowLocation && selectedRowLocation.address.state},
-                  {selectedRowLocation && selectedRowLocation.address.country}
-                </Text>
-                <Text>
-                  Contact Number:{" "}
-                  {selectedRowLocation && selectedRowLocation.contactNumber}
-                </Text>
-                <Text>
-                  Latitude:{" "}
-                  {selectedRowLocation && selectedRowLocation.latitude}
-                </Text>
-                <Text>
-                  Longitude:{" "}
-                  {selectedRowLocation && selectedRowLocation.longitude}
-                </Text>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title}>Recycling Location:</Text>
+                  <Text style={styles.info}>
+                    {selectedRowLocation && selectedRowLocation.locationName}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title}>Address:</Text>
+                  <Text style={styles.info}>
+                    {selectedRowLocation && selectedRowLocation.address.street},{" "}
+                    {selectedRowLocation && selectedRowLocation.address.city},{" "}
+                    {selectedRowLocation &&
+                      selectedRowLocation.address.postalCode}
+                    , {selectedRowLocation && selectedRowLocation.address.state}
+                    ,{" "}
+                    {selectedRowLocation && selectedRowLocation.address.country}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title}>Contact Number:</Text>
+                  <Text style={styles.info}>
+                    {selectedRowLocation && selectedRowLocation.contactNumber}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title}>Latitude:</Text>
+                  <Text style={styles.info}>
+                    {selectedRowLocation && selectedRowLocation.latitude}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title}>Longitude:</Text>
+                  <Text style={styles.info}>
+                    {selectedRowLocation && selectedRowLocation.longitude}
+                  </Text>
+                </View>
               </View>
 
               <View>
@@ -965,13 +993,16 @@ const Recycling = () => {
                 onClose={handleCloseLocation}
                 style={styles.dialog}
               >
-                <Dialog.Title>Add New Recycling Location</Dialog.Title>
+                <Dialog.Title style={styles.dialogTitle}>
+                  Add New Recycling Location
+                </Dialog.Title>
                 <Dialog.ScrollArea>
                   <ScrollView>
                     <Dialog.Content>
                       <Text style={styles.label}>Recycling Location Name</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter Location Name"
                         value={valuesLocation.locationName}
                         onChangeText={(text) =>
                           setValuesLocation({
@@ -983,6 +1014,7 @@ const Recycling = () => {
                       <Text style={styles.label}>Street Address</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter Street Address"
                         value={valuesLocation.street}
                         onChangeText={(text) =>
                           setValuesLocation({
@@ -994,6 +1026,7 @@ const Recycling = () => {
                       <Text style={styles.label}>City</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter City"
                         value={valuesLocation.city}
                         onChangeText={(text) =>
                           setValuesLocation({ ...valuesLocation, city: text })
@@ -1002,6 +1035,7 @@ const Recycling = () => {
                       <Text style={styles.label}>Postal Code</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter Postal Code"
                         value={valuesLocation.postalCode}
                         onChangeText={(text) =>
                           setValuesLocation({
@@ -1012,6 +1046,7 @@ const Recycling = () => {
                       />
                       <Text style={styles.label}>State</Text>
                       <Picker
+                        style={styles.picker}
                         selectedValue={valuesLocation.state}
                         onValueChange={(itemValue) =>
                           setValuesLocation((prevState) => ({
@@ -1020,6 +1055,7 @@ const Recycling = () => {
                           }))
                         }
                       >
+                        <Picker.Item label="Select State" value="" />
                         {malaysiaStates.map((state) => (
                           <Picker.Item
                             key={state}
@@ -1041,11 +1077,13 @@ const Recycling = () => {
                           }))
                         }
                       >
+                        <Picker.Item label="Select Country" value="" />
                         <Picker.Item label="Malaysia" value="Malaysia" />
                       </Picker>
                       <Text style={styles.label}>Contact Number</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter Contact Number"
                         value={valuesLocation.contactNumber}
                         onChangeText={(text) =>
                           setValuesLocation({
@@ -1057,6 +1095,7 @@ const Recycling = () => {
                       <Text style={styles.label}>Latitude</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter Latitude"
                         value={valuesLocation.latitude}
                         onChangeText={(text) =>
                           setValuesLocation({
@@ -1068,6 +1107,7 @@ const Recycling = () => {
                       <Text style={styles.label}>Longitude</Text>
                       <TextInput
                         style={styles.input}
+                        placeholder="Enter Longitude"
                         value={valuesLocation.longitude}
                         onChangeText={(text) =>
                           setValuesLocation({
@@ -1079,7 +1119,7 @@ const Recycling = () => {
                     </Dialog.Content>
                   </ScrollView>
                 </Dialog.ScrollArea>
-                <Dialog.Actions>
+                <Dialog.Actions style={styles.dialogActions}>
                   <Button onPress={handleCloseLocation}>Cancel</Button>
                   <Button onPress={() => onSubmitLocation(valuesLocation)}>
                     Create
@@ -1096,7 +1136,7 @@ const Recycling = () => {
                 onClose={handleCloseLocation}
                 style={styles.dialog}
               >
-                <Dialog.Title>Edit the Recycling Locations</Dialog.Title>
+                <Dialog.Title style={styles.dialogTitle}>Edit the Recycling Locations</Dialog.Title>
                 <Dialog.ScrollArea>
                   <ScrollView>
                     <Dialog.Content>
@@ -1143,6 +1183,7 @@ const Recycling = () => {
                       />
                       <Text style={styles.label}>State</Text>
                       <Picker
+                      style={styles.picker}
                         selectedValue={valuesLocation.state}
                         onValueChange={(itemValue) =>
                           setValuesLocation((prevState) => ({
@@ -1151,6 +1192,7 @@ const Recycling = () => {
                           }))
                         }
                       >
+                        <Picker.Item label="Select State" value="" />
                         {malaysiaStates.map((state) => (
                           <Picker.Item
                             key={state}
@@ -1164,6 +1206,7 @@ const Recycling = () => {
                       </Picker>
                       <Text style={styles.label}>Country</Text>
                       <Picker
+                      style={styles.picker}
                         selectedValue={valuesLocation.country}
                         onValueChange={(itemValue) =>
                           setValuesLocation((prevState) => ({
@@ -1172,6 +1215,7 @@ const Recycling = () => {
                           }))
                         }
                       >
+                        <Picker.Item label="Select Country" value="" />
                         <Picker.Item label="Malaysia" value="Malaysia" />
                       </Picker>
                       <Text style={styles.label}>Contact Number</Text>
@@ -1210,7 +1254,7 @@ const Recycling = () => {
                     </Dialog.Content>
                   </ScrollView>
                 </Dialog.ScrollArea>
-                <Dialog.Actions>
+                <Dialog.Actions style={styles.dialogActions}>
                   <Button onPress={handleCloseLocation}>Cancel</Button>
                   <Button onPress={() => onSubmitEditLocation(valuesLocation)}>
                     Create
@@ -1260,10 +1304,11 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    margin: 12,
+    marginBottom: 16,
+    paddingHorizontal: 8,
     borderWidth: 1,
-    padding: 10,
-    backgroundColor: "white",
+    borderColor: "#DDDDDD",
+    borderRadius: 4,
   },
   mainText: {
     fontSize: 30,
@@ -1366,9 +1411,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dialogActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 16,
+    justifyContent: "flex-end",
+  },
+  dialogTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  picker: {
+    height: 40,
+    marginBottom: 16,
+    backgroundColor: "#F5F5F5",
   },
   button: {
     padding: 8,
@@ -1450,6 +1503,38 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
+  },
+
+  modalContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 8,
+  },
+  modalContent: {
+    marginBottom: 20,
+  },
+  mainTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  infoContainer: {
+    marginBottom: 10,
+  },
+  title: {
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  info: {
+    fontSize: 16,
+  },
+  infoText: {
+    marginBottom: 8,
+  },
+  modalLocationActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
   },
 });
 
