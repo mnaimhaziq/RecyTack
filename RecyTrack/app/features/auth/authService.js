@@ -47,7 +47,7 @@ const getAllUsers = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(`/api/users`, config);
+  const response = await axios.get(`getAllUsers`, config);
   return response.data;
 };
 

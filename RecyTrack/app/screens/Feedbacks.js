@@ -10,10 +10,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { DataTable } from "react-native-paper";
 
-import {
-  createFeedback,
-  getAllFeedback,
-} from "../features/feedback/FeedbackFunction/FeedbackFunction";
+import { getAllFeedback } from "../features/feedback/FeedbackFunction/FeedbackFunction";
 import FooterList from "../components/footer/FooterList";
 
 const Feedbacks = () => {
@@ -30,20 +27,30 @@ const Feedbacks = () => {
 
   return (
     <View style={styles.container}>
-      <DataTable>
-        <DataTable.Header>
-          <DataTable.Title>Name</DataTable.Title>
-          <DataTable.Title>Comment</DataTable.Title>
-          <DataTable.Title>Created At</DataTable.Title>
-          <DataTable.Title></DataTable.Title>
+      <DataTable style={styles.dataTable}>
+        <DataTable.Header style={styles.header}>
+          <DataTable.Title style={styles.shortCell}>
+            <Text style={styles.headerText}>Name</Text>
+          </DataTable.Title>
+          <DataTable.Title style={styles.longCell}>
+            <Text style={styles.headerText}>Comment</Text>
+          </DataTable.Title>
+          <DataTable.Title style={styles.longCell}>
+            <Text style={styles.headerText}>Created At</Text>
+          </DataTable.Title>
         </DataTable.Header>
+        {/* Render feedback data */}
         {feedbacks && feedbacks.length > 0 ? (
           feedbacks.map((feedback, idx) => (
             <React.Fragment key={feedback._id}>
               <DataTable.Row>
-                <DataTable.Cell>{feedback.user.name}</DataTable.Cell>
-                <DataTable.Cell>{feedback.comment}</DataTable.Cell>
-                <DataTable.Cell>
+                <DataTable.Cell style={styles.shortCell}>
+                  {feedback.user.name}
+                </DataTable.Cell>
+                <DataTable.Cell style={styles.longCell}>
+                  {feedback.comment}
+                </DataTable.Cell>
+                <DataTable.Cell style={styles.longCell}>
                   {new Date(feedback.timestamp).toLocaleString()}
                 </DataTable.Cell>
               </DataTable.Row>
@@ -62,10 +69,36 @@ const Feedbacks = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f2f2f2",
   },
-  //   footer: {
-  //     justifyContent: "flex-end",
-  //   },
+  dataTable: {
+    width: "90%",
+    borderRadius: 10,
+    elevation: 3,
+    backgroundColor: "#FFFFFF",
+  },
+  header: {
+    backgroundColor: "#4CAF50",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  headerText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  shortCell: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  longCell: {
+    flex: 2,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 export default Feedbacks;

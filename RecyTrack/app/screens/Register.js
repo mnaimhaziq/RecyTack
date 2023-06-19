@@ -7,9 +7,13 @@ import {
   TouchableOpacity,
   View,
   Button,
+  Image,
 } from "react-native";
+import { ScrollView } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { register } from "../features/auth/authSlice";
+import defaultImage from "../assets/recycleicon.png";
+
 //import DocumentPicker from "react-native-document-picker";
 //import RNFS from "react-native-fs";
 
@@ -36,43 +40,13 @@ function Register({ navigation }) {
   const auth = useSelector((state) => state.auth);
   const { user, isLoading, isSuccess, isError, message } = auth;
 
-  console.log(auth);
-
-  const handleImageUpload = async () => {
-    try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.images],
-      });
-
-      const fileUri = res.uri;
-      const fileContent = await RNFS.readFile(fileUri, "base64");
-
-      setUserImg(fileContent); // Assuming setUserImg is your state setter function
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // const TransformFileData = (file) => {
-  //   const reader = new FileReader();
-
-  //   if (file) {
-  //     reader.readAsDataURL(file);
-  //     reader.onloadend = () => {
-  //       setUserImg(reader.result);
-  //     };
-  //   } else {
-  //     setUserImg("");
-  //   }
-  // };
-
   useEffect(() => {
     if (isSuccess || user) {
       navigation.navigate("Home");
     }
   }, [user, isError, isSuccess, message, navigation, dispatch]);
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
     if (
       name === "" ||
@@ -103,44 +77,53 @@ function Register({ navigation }) {
           country: country,
         },
       };
-      dispatch(register(userData));
+      console.log(JSON.stringify(userData));
+      // await dispatch(register(userData));
     }
   };
 
-  const onChange = (e) => {
-    if (e.target.name.startsWith("address.")) {
+  const onChange = (value, name) => {
+    if (name.startsWith("address.")) {
       setFormData((prevState) => ({
         ...prevState,
         address: {
           ...prevState.address,
-          [e.target.name.split(".")[1]]: e.target.value,
+          [name.split(".")[1]]: value,
         },
       }));
     } else {
       setFormData((prevState) => ({
         ...prevState,
-        [e.target.name]: e.target.value,
+        [name]: value,
       }));
     }
   };
 
   return (
-    <SafeAreaView>
-      <View style={{ padding: 20, backgroundColor:"verylightgrey"}}>
-        <View style={{ alignItems: "center" }}>
-          <Text style={styles.createText}>Create account</Text>
-          <Text style={styles.createSubText}>
-            Create an account so you can get started on your recycling journey!
-          </Text>
-        </View>
+    <View style={[styles.container, { flex: 1 }]}>
+      <View style={{ alignItems: "center" }}>
+        <Text style={styles.createText}>Create account</Text>
+        <Text style={styles.createSubText}>
+          Create an account so you can get started on your recycling journey!
+        </Text>
+      </View>
+      <ScrollView>
         <View style={{ marginVertical: 30 }}>
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            keyboardType="default"
+            name="name"
+            value={name}
+            onChangeText={(text) => onChange(text, "name")}
+          />
           <TextInput
             style={styles.input}
             placeholder="Email"
             keyboardType="default"
             name="email"
             value={email}
-            onChange={onChange}
+            onChangeText={(text) => onChange(text, "email")}
           />
           <TextInput
             style={styles.input}
@@ -148,7 +131,7 @@ function Register({ navigation }) {
             keyboardType="default"
             name="password"
             value={password}
-            onChange={onChange}
+            onChangeText={(text) => onChange(text, "password")}
           />
           <TextInput
             style={styles.input}
@@ -156,16 +139,20 @@ function Register({ navigation }) {
             keyboardType="default"
             name="confirmPassword"
             value={confirmPassword}
-            onChange={onChange}
+            onChangeText={(text) => onChange(text, "confirmPassword")}
           />
-          {/* <Button title="Upload Image" onPress={handleImageUpload} /> */}
+
+          {/* <TouchableOpacity onPress={handleImageUpload}>
+            <Text>Select Image</Text>
+          </TouchableOpacity> */}
+
           <TextInput
             style={styles.input}
             placeholder="Enter Street"
             keyboardType="default"
             name="address.street"
             value={formData.address.street}
-            onChange={onChange}
+            onChangeText={(text) => onChange(text, "address.street")}
           />
           <TextInput
             style={styles.input}
@@ -173,15 +160,15 @@ function Register({ navigation }) {
             keyboardType="default"
             name="address.city"
             value={formData.address.city}
-            onChange={onChange}
+            onChangeText={(text) => onChange(text, "address.city")}
           />
           <TextInput
             style={styles.input}
             placeholder="Enter Postal Code"
             keyboardType="default"
-            name="address.code"
-            value={formData.address.code}
-            onChange={onChange}
+            name="address.postalCode"
+            value={formData.address.postalCode}
+            onChangeText={(text) => onChange(text, "address.postalCode")}
           />
           <TextInput
             style={styles.input}
@@ -189,27 +176,32 @@ function Register({ navigation }) {
             keyboardType="default"
             name="address.country"
             value={formData.address.country}
-            onChange={onChange}
+            onChangeText={(text) => onChange(text, "address.country")}
           />
         </View>
+      </ScrollView>
 
-        <TouchableOpacity style={styles.signUpButton} onPress={submitHandler}>
-          <Text style={styles.signUpText}>Sign up</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login")}
-          style={{
-            padding: 10,
-          }}
-        >
-          <Text style={styles.haveAccount}>Already have an account</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      <TouchableOpacity style={styles.signUpButton} onPress={submitHandler}>
+        <Text style={styles.signUpText}>Sign up</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Login")}
+        style={{
+          padding: 10,
+        }}
+      >
+        <Text style={styles.haveAccount}>Already have an account</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    // backgroundColor: "#FFFFF",
+  },
   createText: {
     fontSize: 30,
     color: "green",

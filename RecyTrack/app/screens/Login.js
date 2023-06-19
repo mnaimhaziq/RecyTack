@@ -123,9 +123,9 @@ function Login({ navigation }) {
           autoCompleteType="password"
         />
       </View>
-      <Text style={{ marginHorizontal: 24 }}>
+      {/* <Text style={{ marginHorizontal: 24 }}>
         {JSON.stringify({ email, password })}
-      </Text>
+      </Text> */}
 
       <View>
         <Text style={styles.forgotText}>Forgot your password ?</Text>
