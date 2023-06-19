@@ -35,6 +35,8 @@ const UserHistoryTable = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth);
@@ -201,6 +203,12 @@ const UserHistoryTable = () => {
           { maxHeight: windowHeight - 200, elevation: 2 },
         ]}
       >
+        <TextInput
+          style={styles.input}
+          placeholder="Search by user name"
+          value={searchQuery}
+          onChangeText={(text) => setSearchQuery(text)}
+        />
         <View style={[styles.header, styles.row]}>
           <Text style={[styles.headerText, styles.shortCell]}>Name</Text>
           <Text style={[styles.headerText, styles.longCell]}>Location</Text>
@@ -209,8 +217,9 @@ const UserHistoryTable = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {allRecyclingHistories &&
             allRecyclingHistories
-              .slice()
-              .sort((a, b) => a.user.localeCompare(b.user)) // Sort the array by name
+              .filter((row) =>
+                row.user.toLowerCase().includes(searchQuery.toLowerCase())
+              )
               .map((row, idx) => (
                 <TouchableOpacity
                   key={`${row.user_id}_${idx}`}
@@ -297,7 +306,7 @@ const UserHistoryTable = () => {
           {/* Render the Dialog here */}
           <Dialog visible={open} onDismiss={handleClose}>
             <Dialog.Title style={styles.dialogTitle}>
-              Add New Recycling History for 
+              Add New Recycling History for
             </Dialog.Title>
             <Dialog.Content>
               <Text style={styles.label}>User</Text>
@@ -403,9 +412,7 @@ const UserHistoryTable = () => {
               />
             </Dialog.Content>
             <Dialog.Actions style={styles.dialogActions}>
-              <Button onPress={handleClose}>
-                Cancel
-              </Button>
+              <Button onPress={handleClose}>Cancel</Button>
               <Button onPress={() => onSubmit(valuesAdd)}>Create</Button>
             </Dialog.Actions>
           </Dialog>
@@ -424,7 +431,7 @@ const UserHistoryTable = () => {
             <Dialog.Content>
               <Text style={styles.label}>Recycling Location</Text>
               <Picker
-              style={styles.picker}
+                style={styles.picker}
                 selectedValue={values.recyclingLocationId}
                 onValueChange={(itemValue) =>
                   setValues((prevState) => ({
@@ -446,7 +453,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Recycling Method</Text>
               <Picker
-              style={styles.picker}
+                style={styles.picker}
                 selectedValue={values.recyclingMethod}
                 onValueChange={(itemValue) =>
                   setValues((prevState) => ({
@@ -465,7 +472,7 @@ const UserHistoryTable = () => {
               </Picker>
               <Text style={styles.label}>Waste Type</Text>
               <Picker
-              style={styles.picker}
+                style={styles.picker}
                 selectedValue={values.wasteType}
                 onValueChange={(itemValue) =>
                   setValues((prevState) => ({
@@ -659,6 +666,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#DDDDDD",
     borderRadius: 4,
+    activeUnderlineColor: "#4CAF50",
   },
   dialogActions: {
     justifyContent: "flex-end",

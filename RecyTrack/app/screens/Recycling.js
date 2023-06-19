@@ -4,7 +4,7 @@ import {
   SafeAreaView,
   View,
   Picker,
-  TextInput,
+  // TextInput,
   TouchableOpacityComponent,
   TouchableWithoutFeedback,
   Linking,
@@ -25,6 +25,7 @@ import {
   Dialog,
   IconButton,
   MD3Colors,
+  TextInput
 } from "react-native-paper";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -834,6 +835,8 @@ const Recycling = () => {
 
   const windowHeight = Dimensions.get("window").height;
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const renderLocationTab = () => {
     return (
       <View style={styles.container}>
@@ -857,6 +860,12 @@ const Recycling = () => {
                 { maxHeight: windowHeight - 200, elevation: 2 },
               ]}
             >
+              <TextInput
+                style={styles.input}
+                placeholder="Search by location name"
+                value={searchQuery}
+                onChangeText={(text) => setSearchQuery(text)}
+              />
               <View style={[styles.header, styles.row]}>
                 <Text style={[styles.headerText, styles.longCell]}>Name</Text>
                 <Text style={[styles.headerText, styles.longCell]}>
@@ -869,31 +878,37 @@ const Recycling = () => {
 
               <ScrollView contentContainerStyle={styles.scrollContainer}>
                 {allRecycleLocations.data &&
-                  allRecycleLocations.data.map((row) => (
-                    <TouchableOpacity
-                      key={row._id}
-                      style={[styles.row, styles.rowEven]}
-                      onPress={() => handleInfoButtonPressLocation(row)}
-                    >
-                      <Text style={[styles.text, styles.longCell]}>
-                        {row.locationName}
-                      </Text>
-                      <Text
-                        style={[styles.text, styles.longCell]}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
+                  allRecycleLocations.data
+                    .filter((row) =>
+                      row.locationName
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                    )
+                    .map((row) => (
+                      <TouchableOpacity
+                        key={row._id}
+                        style={[styles.row, styles.rowEven]}
+                        onPress={() => handleInfoButtonPressLocation(row)}
                       >
-                        {`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}
-                      </Text>
-                      <Text
-                        style={[styles.text, styles.shortCell]}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {row.contactNumber}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text style={[styles.text, styles.longCell]}>
+                          {row.locationName}
+                        </Text>
+                        <Text
+                          style={[styles.text, styles.longCell]}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {`${row.address.street}, ${row.address.city}, ${row.address.postalCode}, ${row.address.state}, ${row.address.country}`}
+                        </Text>
+                        <Text
+                          style={[styles.text, styles.shortCell]}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {row.contactNumber}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
               </ScrollView>
             </View>
 
