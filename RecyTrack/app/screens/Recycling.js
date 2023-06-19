@@ -454,7 +454,7 @@ const Recycling = () => {
                         }))
                       }
                     >
-                      {recycleLocations.data
+                      {allRecycleLocations.data
                         .slice()
                         .sort((a, b) =>
                           a.locationName.localeCompare(b.locationName)
@@ -845,7 +845,7 @@ const Recycling = () => {
                   style={styles.createButton}
                   onPress={handleClickOpenLocation}
                 >
-                  <Text style={styles.createButtonText}>Create</Text>
+                  <Text style={styles.createButtonText}>Add</Text>
                 </Button>
               </View>
             ) : (
@@ -1069,6 +1069,7 @@ const Recycling = () => {
                       </Picker>
                       <Text style={styles.label}>Country</Text>
                       <Picker
+                        style={styles.picker}
                         selectedValue={valuesLocation.country}
                         onValueChange={(itemValue) =>
                           setValuesLocation((prevState) => ({
@@ -1136,7 +1137,9 @@ const Recycling = () => {
                 onClose={handleCloseLocation}
                 style={styles.dialog}
               >
-                <Dialog.Title style={styles.dialogTitle}>Edit the Recycling Locations</Dialog.Title>
+                <Dialog.Title style={styles.dialogTitle}>
+                  Edit the Recycling Locations
+                </Dialog.Title>
                 <Dialog.ScrollArea>
                   <ScrollView>
                     <Dialog.Content>
@@ -1183,7 +1186,7 @@ const Recycling = () => {
                       />
                       <Text style={styles.label}>State</Text>
                       <Picker
-                      style={styles.picker}
+                        style={styles.picker}
                         selectedValue={valuesLocation.state}
                         onValueChange={(itemValue) =>
                           setValuesLocation((prevState) => ({
@@ -1206,7 +1209,7 @@ const Recycling = () => {
                       </Picker>
                       <Text style={styles.label}>Country</Text>
                       <Picker
-                      style={styles.picker}
+                        style={styles.picker}
                         selectedValue={valuesLocation.country}
                         onValueChange={(itemValue) =>
                           setValuesLocation((prevState) => ({
@@ -1257,7 +1260,7 @@ const Recycling = () => {
                 <Dialog.Actions style={styles.dialogActions}>
                   <Button onPress={handleCloseLocation}>Cancel</Button>
                   <Button onPress={() => onSubmitEditLocation(valuesLocation)}>
-                    Create
+                    Save
                   </Button>
                 </Dialog.Actions>
               </Dialog>
