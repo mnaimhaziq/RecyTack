@@ -5,6 +5,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem("userInfo"));
 
+// Get user from AsyncStorage
+// const getUser = async () => {
+//   const userInfoString = await AsyncStorage.getItem("userInfo");
+//   const userInfo = JSON.parse(userInfoString);
+//   return userInfo ? userInfo.user : null;
+// };
+
+// Usage
+// const user = await getUser();
+
 const initialState = {
   user: user ? user : null,
   isError: false,

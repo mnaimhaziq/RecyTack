@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { register } from "../features/auth/authSlice";
 import defaultImage from "../assets/recycleicon.png";
 
+
 //import DocumentPicker from "react-native-document-picker";
 //import RNFS from "react-native-fs";
 
@@ -24,6 +25,7 @@ function Register({ navigation }) {
     email: "",
     password: "",
     confirmPassword: "",
+    userImg: userImg,
     address: {
       street: "",
       city: "",
@@ -142,9 +144,9 @@ function Register({ navigation }) {
             onChangeText={(text) => onChange(text, "confirmPassword")}
           />
 
-          {/* <TouchableOpacity onPress={handleImageUpload}>
+          <TouchableOpacity onPress={handleImageUpload}>
             <Text>Select Image</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
 
           <TextInput
             style={styles.input}
@@ -181,7 +183,7 @@ function Register({ navigation }) {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.signUpButton} onPress={submitHandler}>
+      <TouchableOpacity style={styles.signUpButton} onPress={() => console.log(formData)}>
         <Text style={styles.signUpText}>Sign up</Text>
       </TouchableOpacity>
       <TouchableOpacity

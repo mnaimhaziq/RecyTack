@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { DataTable } from "react-native-paper";
+import { ScrollView } from "react-native";
 
 import { getAllFeedback } from "../features/feedback/FeedbackFunction/FeedbackFunction";
 import FooterList from "../components/footer/FooterList";
@@ -40,27 +41,31 @@ const Feedbacks = () => {
           </DataTable.Title>
         </DataTable.Header>
         {/* Render feedback data */}
-        {feedbacks && feedbacks.length > 0 ? (
-          feedbacks.map((feedback, idx) => (
-            <React.Fragment key={feedback._id}>
-              <DataTable.Row>
-                <DataTable.Cell style={styles.shortCell}>
-                  {feedback.user.name}
-                </DataTable.Cell>
-                <DataTable.Cell style={styles.longCell}>
-                  {feedback.comment}
-                </DataTable.Cell>
-                <DataTable.Cell style={styles.longCell}>
-                  {new Date(feedback.timestamp).toLocaleString()}
-                </DataTable.Cell>
-              </DataTable.Row>
-            </React.Fragment>
-          ))
-        ) : (
-          <DataTable.Row>
-            <DataTable.Cell>No feedbacks available</DataTable.Cell>
-          </DataTable.Row>
-        )}
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {feedbacks && feedbacks.length > 0 ? (
+            [...feedbacks]
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort feedbacks by timestamp (newest first)
+              .map((feedback, idx) => (
+                <React.Fragment key={feedback._id}>
+                  <DataTable.Row>
+                    <DataTable.Cell style={styles.shortCell}>
+                      {feedback.user.name}
+                    </DataTable.Cell>
+                    <DataTable.Cell style={styles.longCell}>
+                      {feedback.comment}
+                    </DataTable.Cell>
+                    <DataTable.Cell style={styles.longCell}>
+                      {new Date(feedback.timestamp).toLocaleString()}
+                    </DataTable.Cell>
+                  </DataTable.Row>
+                </React.Fragment>
+              ))
+          ) : (
+            <DataTable.Row>
+              <DataTable.Cell>No feedbacks available</DataTable.Cell>
+            </DataTable.Row>
+          )}
+        </ScrollView>
       </DataTable>
     </View>
   );
@@ -72,6 +77,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f2f2f2",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: "#FFFFFF",
   },
   dataTable: {
     width: "90%",

@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ScrollView } from "native-base";
 import { Dimensions } from "react-native";
 import { Toast } from "react-native-toast-message/lib/src/Toast";
+import * as yup from "yup";
 
 import {
   createRecyclingHistory,
@@ -79,6 +80,27 @@ const UserHistoryTable = () => {
     wasteType: "",
   });
 
+  // Define the validation schema using yup
+  const validationSchemaAdd = yup.object().shape({
+    recyclingLocationId: yup
+      .string()
+      .required("Recycling Location is required"),
+    recyclingMethod: yup.string().required("Recycling Method is required"),
+    quantity: yup.number().required("Quantity is required"),
+    wasteType: yup.string().required("Waste Type is required"),
+    user_id: yup.string().required("User ID is required"),
+  });
+
+  // Define the validation schema using yup
+  const validationSchemaEdit = yup.object().shape({
+    recyclingLocationId: yup
+      .string()
+      .required("Recycling Location is required"),
+    recyclingMethod: yup.string().required("Recycling Method is required"),
+    quantity: yup.number().required("Quantity is required"),
+    wasteType: yup.string().required("Waste Type is required"),
+  });
+
   const handleShowModal = () => {
     setVisible(true);
   };
@@ -125,51 +147,91 @@ const UserHistoryTable = () => {
   };
 
   const onSubmit = async (valuesAdd) => {
-    // const { recyclingLocationId, recyclingMethod, quantity, wasteType  } =
-    //   values;
-    //   const user_id = AddRow.user_id
-    const newFormData = {
-      recyclingLocationId: valuesAdd.recyclingLocationId,
-      recyclingMethod: valuesAdd.recyclingMethod,
-      quantity: calculateQuantity(valuesAdd.quantity, valuesAdd.wasteType),
-      wasteType: valuesAdd.wasteType,
-      user_id: valuesAdd.user_id,
-    };
+    try {
+      await validationSchemaAdd.validate(valuesAdd, { abortEarly: false });
 
-    console.log(newFormData);
+      const {
+        recyclingLocationId,
+        recyclingMethod,
+        quantity,
+        wasteType,
+        user_id,
+      } = valuesAdd;
 
-    await dispatch(createRecyclingHistory({ newFormData, token: user.token }));
-    dispatch(getAllRecyclingHistories(user.token));
+      const newFormData = {
+        recyclingLocationId,
+        recyclingMethod,
+        quantity: calculateQuantity(quantity, wasteType),
+        wasteType,
+        user_id,
+      };
 
-    handleClose();
-    Toast.show({
-      type: "success",
-      text1: "Recycling History has been created for the user",
-    });
+      console.log(newFormData);
+
+      await dispatch(
+        createRecyclingHistory({ newFormData, token: user.token })
+      );
+      dispatch(getAllRecyclingHistories(user.token));
+
+      handleClose();
+      Toast.show({
+        type: "success",
+        text1: "Recycling History has been created for the user",
+      });
+    } catch (error) {
+      // Handle validation errors
+      const validationErrors = {};
+      error.inner.forEach((err) => {
+        validationErrors[err.path] = err.message;
+      });
+
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields.",
+        text2: JSON.stringify(validationErrors),
+      });
+    }
   };
 
   const onSubmitEdit = async (values) => {
-    const newFormData = {
-      recyclingHistoryId: recyclingHistoryId,
-      recyclingLocationId: values.recyclingLocationId,
-      recyclingMethod: values.recyclingMethod,
-      quantity: calculateQuantity(values.quantity, values.wasteType),
-      wasteType: values.wasteType,
-    };
+    try {
+      await validationSchemaEdit.validate(values, { abortEarly: false });
 
-    console.log(newFormData);
+      const newFormData = {
+        recyclingHistoryId: recyclingHistoryId,
+        recyclingLocationId: values.recyclingLocationId,
+        recyclingMethod: values.recyclingMethod,
+        quantity: calculateQuantity(values.quantity, values.wasteType),
+        wasteType: values.wasteType,
+      };
 
-    const id = editedRow.id;
+      console.log(newFormData);
 
-    await dispatch(
-      updateRecycleHistoryById({ id, newFormData, token: user.token })
-    );
-    dispatch(getAllRecyclingHistories(user.token));
-    Toast.show({
-      type: "success",
-      text1: "Recycling History has been edited",
-    });
-    handleClose();
+      const id = editedRow.id;
+
+      await dispatch(
+        updateRecycleHistoryById({ id, newFormData, token: user.token })
+      );
+      dispatch(getAllRecyclingHistories(user.token));
+
+      Toast.show({
+        type: "success",
+        text1: "Recycling History has been edited",
+      });
+      handleClose();
+    } catch (error) {
+      // Handle validation errors
+      const validationErrors = {};
+      error.inner.forEach((err) => {
+        validationErrors[err.path] = err.message;
+      });
+
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields.",
+        text2: JSON.stringify(validationErrors),
+      });
+    }
   };
 
   const handleDelete = async (id) => {

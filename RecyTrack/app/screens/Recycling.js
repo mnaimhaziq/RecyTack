@@ -25,7 +25,7 @@ import {
   Dialog,
   IconButton,
   MD3Colors,
-  TextInput
+  TextInput,
 } from "react-native-paper";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -165,12 +165,17 @@ const Recycling = () => {
     }
   };
 
-  const initialValues = {
-    recyclingLocationId: "",
-    recyclingMethod: "",
-    quantity: "",
-    wasteType: "",
-  };
+  const validationSchema = Yup.object().shape({
+    recyclingLocationId: Yup.string().required(
+      "Recycling location is required"
+    ),
+    recyclingMethod: Yup.string().required("Recycling method is required"),
+    quantity: Yup.number()
+      .typeError("Quantity must be a number")
+      .positive("Quantity must be a positive number")
+      .required("Quantity is required"),
+    wasteType: Yup.string().required("Waste type is required"),
+  });
 
   const [values, setValues] = useState({
     recyclingLocationId: "",
@@ -210,17 +215,72 @@ const Recycling = () => {
   };
 
   const onSubmit = async (values) => {
-    const newFormData = {
-      recyclingLocationId: values.recyclingLocationId,
-      recyclingMethod: values.recyclingMethod,
-      quantity: calculateQuantity(values.quantity, values.wasteType),
-      wasteType: values.wasteType,
-    };
-    console.log(newFormData);
+    try {
+      await validationSchema.validate(values, { abortEarly: false });
 
-    await dispatch(
-      createRecyclingHistory({ newFormData, token: user.token })
-    ).then(() => {
+      const newFormData = {
+        recyclingLocationId: values.recyclingLocationId,
+        recyclingMethod: values.recyclingMethod,
+        quantity: calculateQuantity(values.quantity, values.wasteType),
+        wasteType: values.wasteType,
+      };
+
+      console.log(newFormData);
+
+      await dispatch(
+        createRecyclingHistory({ newFormData, token: user.token })
+      ).then(() => {
+        dispatch(
+          getRecycleHistoryByUserIdAndPage({
+            id: user._id,
+            page,
+            token: user.token,
+          })
+        );
+      });
+
+      Toast.show({
+        type: "success",
+        text1: "New Recycling History has been created",
+      });
+
+      setOpen(false);
+    } catch (error) {
+      // Handle validation errors
+      const validationErrors = {};
+      error.inner.forEach((err) => {
+        validationErrors[err.path] = err.message;
+        // Show error message for each field
+        Toast.show({
+          type: "error",
+          text1: err.message,
+        });
+      });
+      console.log(validationErrors);
+      // Set the validation errors in your form state or display them in some way
+    }
+  };
+
+  const onSubmitEdit = async (values) => {
+    try {
+      await validationSchema.validate(values, { abortEarly: false });
+
+      const newFormData = {
+        recyclingHistoryId: recyclingHistoryId,
+        recyclingLocationId: values.recyclingLocationId,
+        recyclingMethod: values.recyclingMethod,
+        quantity: calculateQuantity(values.quantity, values.wasteType),
+        wasteType: values.wasteType,
+      };
+
+      console.log(newFormData);
+
+      const id = recyclingHistory._id;
+
+      await dispatch(
+        updateRecycleHistoryById({ id, newFormData, token: user.token })
+      );
+
       dispatch(
         getRecycleHistoryByUserIdAndPage({
           id: user._id,
@@ -228,43 +288,27 @@ const Recycling = () => {
           token: user.token,
         })
       );
-    });
-    Toast.show({
-      type: "success",
-      text1: "New Recycling History has been created",
-    });
-    // resetForm();
-    setOpen(false);
-  };
 
-  const onSubmitEdit = async (values) => {
-    const newFormData = {
-      recyclingHistoryId: recyclingHistoryId,
-      recyclingLocationId: values.recyclingLocationId,
-      recyclingMethod: values.recyclingMethod,
-      quantity: calculateQuantity(values.quantity, values.wasteType),
-      wasteType: values.wasteType,
-    };
+      Toast.show({
+        type: "success",
+        text1: "Recycling History has been edited",
+      });
 
-    console.log(newFormData);
+      setOpenEditDialog(false);
+    } catch (error) {
+      const validationErrors = {};
+      error.inner.forEach((err) => {
+        validationErrors[err.path] = err.message;
 
-    const id = recyclingHistory._id;
+        Toast.show({
+          type: "error",
+          text1: err.message,
+        });
+      });
 
-    await dispatch(
-      updateRecycleHistoryById({ id, newFormData, token: user.token })
-    );
-    dispatch(
-      getRecycleHistoryByUserIdAndPage({
-        id: user._id,
-        page,
-        token: user.token,
-      })
-    );
-    Toast.show({
-      type: "success",
-      text1: "Recycling History has been edited",
-    });
-    setOpenEditDialog(false);
+      console.log(validationErrors);
+      // Set the validation errors in your form state or display them in some way
+    }
   };
 
   const [selectedValue, setSelectedValue] = useState("");
@@ -721,41 +765,73 @@ const Recycling = () => {
     Linking.openURL(mapUrl);
   };
 
+  // Define the validation schema using yup
+  const validationSchemaLocation = Yup.object().shape({
+    locationName: Yup.string().required("Location Name is required"),
+    contactNumber: Yup.string().required("Contact Number is required"),
+    latitude: Yup.number().required("Latitude is required"),
+    longitude: Yup.number().required("Longitude is required"),
+    street: Yup.string().required("Street is required"),
+    city: Yup.string().required("City is required"),
+    postalCode: Yup.string().required("Postal Code is required"),
+    state: Yup.string().required("State is required"),
+    country: Yup.string().required("Country is required"),
+  });
+
   const onSubmitLocation = async (valuesLocation) => {
-    const newFormData = {
-      locationName: valuesLocation.locationName,
-      contactNumber: valuesLocation.contactNumber,
-      latitude: valuesLocation.latitude,
-      longitude: valuesLocation.longitude,
-      address: {
-        street: valuesLocation.street,
-        city: valuesLocation.city,
-        postalCode: valuesLocation.postalCode,
-        state: valuesLocation.state,
-        country: valuesLocation.country,
-      },
-    };
-
-    console.log(newFormData);
-
-    await dispatch(createRecycleLocation({ newFormData, token: user.token }))
-      .then(() => {
-        dispatch(
-          getAllRecycleLocationByPageAndKeyword({
-            token: user.token,
-            page,
-            search,
-          })
-        );
-      })
-      .then(() => {
-        dispatch(getAllRecycleLocation(user.token));
+    try {
+      await validationSchemaLocation.validate(valuesLocation, {
+        abortEarly: false,
       });
-    Toast.show({
-      type: "success",
-      text1: "New Recycling Location has been created",
-    });
-    setOpenLocation(false);
+
+      const newFormData = {
+        locationName: valuesLocation.locationName,
+        contactNumber: valuesLocation.contactNumber,
+        latitude: valuesLocation.latitude,
+        longitude: valuesLocation.longitude,
+        address: {
+          street: valuesLocation.street,
+          city: valuesLocation.city,
+          postalCode: valuesLocation.postalCode,
+          state: valuesLocation.state,
+          country: valuesLocation.country,
+        },
+      };
+
+      console.log(newFormData);
+
+      await dispatch(createRecycleLocation({ newFormData, token: user.token }))
+        .then(() => {
+          dispatch(
+            getAllRecycleLocationByPageAndKeyword({
+              token: user.token,
+              page,
+              search,
+            })
+          );
+        })
+        .then(() => {
+          dispatch(getAllRecycleLocation(user.token));
+        });
+
+      Toast.show({
+        type: "success",
+        text1: "New Recycling Location has been created",
+      });
+      setOpenLocation(false);
+    } catch (error) {
+      // Handle validation errors
+      const validationErrors = {};
+      error.inner.forEach((err) => {
+        validationErrors[err.path] = err.message;
+      });
+
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields.",
+        text2: JSON.stringify(validationErrors),
+      });
+    }
   };
 
   const handleDeleteLocation = async (id) => {
@@ -808,6 +884,10 @@ const Recycling = () => {
     console.log(newFormData);
 
     try {
+      await validationSchemaLocation.validate(valuesLocation, {
+        abortEarly: false,
+      });
+
       await dispatch(
         updateRecycleLocationById({ id, newFormData, token: user.token })
       )
@@ -823,13 +903,24 @@ const Recycling = () => {
         .then(() => {
           dispatch(getAllRecycleLocation(user.token));
         });
+
       Toast.show({
         type: "success",
         text1: "Recycling Location has been edited",
       });
       handleCloseLocation();
     } catch (error) {
-      console.error(error);
+      // Handle validation errors
+      const validationErrors = {};
+      error.inner.forEach((err) => {
+        validationErrors[err.path] = err.message;
+      });
+
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields.",
+        text2: JSON.stringify(validationErrors),
+      });
     }
   };
 
@@ -1458,14 +1549,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  input: {
-    width: "80%",
-    height: 40,
-    borderWidth: 1,
-    borderColor: "gray",
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
+  // input: {
+  //   width: "80%",
+  //   height: 40,
+  //   borderWidth: 1,
+  //   borderColor: "gray",
+  //   paddingHorizontal: 10,
+  //   marginBottom: 10,
+  // },
   tabBar: {
     backgroundColor: "white",
     elevation: 0,

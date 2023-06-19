@@ -23,6 +23,15 @@ const login = async (userData) => {
   return response.data;
 };
 
+// const login = async (userData) => {
+//   const response = await axios.post(API_URL + "login", userData);
+
+//   if (response.data) {
+//     await AsyncStorage.setItem("userInfo", JSON.stringify(response.data));
+//   }
+//   return response.data;
+// };
+
 // Update user
 const updateProfile = async (userUpdateData) => {
   const config = {
@@ -55,6 +64,16 @@ const getAllUsers = async (token) => {
 const logout = () => {
   localStorage.removeItem("userInfo");
 };
+
+// const logout = async () => {
+//   try {
+//     await AsyncStorage.removeItem("userInfo");
+//     // Additional cleanup or actions after logout if needed
+//   } catch (error) {
+//     // Handle error if any
+//     console.log("Error occurred while logging out:", error);
+//   }
+// };
 
 const authService = {
   register,
